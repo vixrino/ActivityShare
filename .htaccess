@@ -1,0 +1,19 @@
+RewriteEngine On
+
+# Redirect everything to index.php except existing files/directories
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?page=$1 [QSA,L]
+
+# Deny access to sensitive files
+<FilesMatch "\.(sql|md)$">
+    Deny from all
+</FilesMatch>
+
+# Deny access to config directory
+<IfModule mod_rewrite.c>
+    RewriteRule ^config/ - [F,L]
+    RewriteRule ^models/ - [F,L]
+    RewriteRule ^controllers/ - [F,L]
+    RewriteRule ^helpers/ - [F,L]
+</IfModule>
