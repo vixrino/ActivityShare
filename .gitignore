@@ -1,0 +1,16 @@
+# Fichiers de configuration sensibles
+config/database.php
+
+# Fichiers uploadés par les utilisateurs
+uploads/
+
+# Fichiers système macOS
+.DS_Store
+**/.DS_Store
+
+# Logs
+*.log
+
+# Fichiers PHP de cache ou temporaires
+*.cache
+/tmp/
