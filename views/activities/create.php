@@ -63,12 +63,14 @@
                         <div class="form-group">
                             <label for="date_debut">Date et heure de début *</label>
                             <input type="datetime-local" id="date_debut" name="date_debut" class="form-control"
-                                   value="<?= $_POST['date_debut'] ?? '' ?>" required>
+                                   value="<?= $_POST['date_debut'] ?? '' ?>"
+                                   min="<?= date('Y-m-d\TH:i') ?>" required>
                         </div>
                         <div class="form-group">
                             <label for="date_fin">Date et heure de fin *</label>
                             <input type="datetime-local" id="date_fin" name="date_fin" class="form-control"
-                                   value="<?= $_POST['date_fin'] ?? '' ?>" required>
+                                   value="<?= $_POST['date_fin'] ?? '' ?>"
+                                   min="<?= date('Y-m-d\TH:i') ?>" required>
                         </div>
                     </div>
 
