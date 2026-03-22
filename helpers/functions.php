@@ -3,22 +3,35 @@
 function redirect($page, $params = []) {
     $url = 'index.php?page=' . $page;
     if (!empty($params)) {
-        $url .= '&' . http_build_query($params);
+        foreach ($params as $cle => $valeur) {
+            $url = $url . '&' . $cle . '=' . $valeur;
+        }
     }
     header("Location: $url");
     exit;
 }
 
 function isLoggedIn() {
-    return isset($_SESSION['user_id']);
+    if (isset($_SESSION['user_id'])) {
+        return true;
+    }
+    return false;
 }
 
 function isOrganisateur() {
-    return isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['organisateur', 'administrateur']);
+    if (isset($_SESSION['user_role'])) {
+        if ($_SESSION['user_role'] === 'organisateur' || $_SESSION['user_role'] === 'administrateur') {
+            return true;
+        }
+    }
+    return false;
 }
 
 function isAdmin() {
-    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'administrateur';
+    if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'administrateur') {
+        return true;
+    }
+    return false;
 }
 
 function requireLogin() {
@@ -45,18 +58,9 @@ function requireAdmin() {
 }
 
 function sanitize($data) {
-    return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
-}
-
-function generateCSRFToken() {
-    if (empty($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    }
-    return $_SESSION['csrf_token'];
-}
-
-function verifyCSRFToken($token) {
-    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+    $data = trim($data);
+    $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+    return $data;
 }
 
 function flash() {
@@ -85,51 +89,70 @@ function formatTime($date) {
 }
 
 function timeAgo($datetime) {
-    $now = new DateTime();
-    $ago = new DateTime($datetime);
-    $diff = $now->diff($ago);
+    $maintenant = new DateTime();
+    $passe = new DateTime($datetime);
+    $diff = $maintenant->diff($passe);
 
-    if ($diff->y > 0) return "il y a " . $diff->y . " an" . ($diff->y > 1 ? "s" : "");
-    if ($diff->m > 0) return "il y a " . $diff->m . " mois";
-    if ($diff->d > 0) return "il y a " . $diff->d . " jour" . ($diff->d > 1 ? "s" : "");
-    if ($diff->h > 0) return "il y a " . $diff->h . " heure" . ($diff->h > 1 ? "s" : "");
-    if ($diff->i > 0) return "il y a " . $diff->i . " minute" . ($diff->i > 1 ? "s" : "");
+    if ($diff->y > 0) {
+        return "il y a " . $diff->y . " an(s)";
+    }
+    if ($diff->m > 0) {
+        return "il y a " . $diff->m . " mois";
+    }
+    if ($diff->d > 0) {
+        return "il y a " . $diff->d . " jour(s)";
+    }
+    if ($diff->h > 0) {
+        return "il y a " . $diff->h . " heure(s)";
+    }
+    if ($diff->i > 0) {
+        return "il y a " . $diff->i . " minute(s)";
+    }
     return "à l'instant";
 }
 
 function uploadImage($file, $directory) {
-    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    $maxSize = 5 * 1024 * 1024; // 5MB
+    $typesAutorises = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    $tailleMax = 5 * 1024 * 1024;
 
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return null;
     }
 
-    if (!in_array($file['type'], $allowedTypes)) {
+    if (!in_array($file['type'], $typesAutorises)) {
         return null;
     }
 
-    if ($file['size'] > $maxSize) {
+    if ($file['size'] > $tailleMax) {
         return null;
     }
 
-    $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $filename = uniqid() . '_' . time() . '.' . $ext;
-    $uploadPath = __DIR__ . '/../uploads/' . $directory . '/' . $filename;
+    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $nomFichier = uniqid() . '_' . time() . '.' . $extension;
+    $cheminUpload = __DIR__ . '/../uploads/' . $directory . '/' . $nomFichier;
 
-    if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
-        return 'uploads/' . $directory . '/' . $filename;
+    if (move_uploaded_file($file['tmp_name'], $cheminUpload)) {
+        return 'uploads/' . $directory . '/' . $nomFichier;
     }
 
     return null;
 }
 
 function getPlacesRestantes($activiteId) {
-    $activity = new Activity();
-    $act = $activity->find($activiteId);
-    if (!$act) return 0;
+    $activiteModel = new Activity();
+    $activite = $activiteModel->find($activiteId);
 
-    $registration = new Registration();
-    $count = $registration->countByActivity($activiteId);
-    return max(0, $act['nb_max_participants'] - $count);
+    if (!$activite) {
+        return 0;
+    }
+
+    $inscriptionModel = new Registration();
+    $nbInscrits = $inscriptionModel->countByActivity($activiteId);
+    $places = $activite['nb_max_participants'] - $nbInscrits;
+
+    if ($places < 0) {
+        $places = 0;
+    }
+
+    return $places;
 }
