@@ -7,111 +7,123 @@ class Activity {
     }
 
     public function find($id) {
-        $stmt = $this->db->prepare("
-            SELECT a.*, c.nom as categorie_nom, c.icone as categorie_icone,
-                   u.nom as organisateur_nom, u.prenom as organisateur_prenom, u.email as organisateur_email
-            FROM activite a
-            JOIN categorie c ON a.categorie_id = c.id
-            JOIN utilisateur u ON a.organisateur_id = u.id
-            WHERE a.id = ?
-        ");
+        $sql = "SELECT a.*, c.nom as categorie_nom, c.icone as categorie_icone,
+                       u.nom as organisateur_nom, u.prenom as organisateur_prenom, u.email as organisateur_email
+                FROM activite a
+                JOIN categorie c ON a.categorie_id = c.id
+                JOIN utilisateur u ON a.organisateur_id = u.id
+                WHERE a.id = ?";
+
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
-        return $stmt->fetch();
+        $activite = $stmt->fetch();
+        return $activite;
     }
 
     public function getAll($limit = null, $offset = 0, $filters = []) {
-        $where = ["a.statut = 'active'", "a.date_debut >= NOW()"];
+        $conditions = [];
+        $conditions[] = "a.statut = 'active'";
+        $conditions[] = "a.date_debut >= NOW()";
         $params = [];
 
         if (!empty($filters['categorie'])) {
-            $where[] = "a.categorie_id = ?";
+            $conditions[] = "a.categorie_id = ?";
             $params[] = $filters['categorie'];
         }
+
         if (!empty($filters['type'])) {
-            $where[] = "a.type = ?";
+            $conditions[] = "a.type = ?";
             $params[] = $filters['type'];
         }
+
         if (!empty($filters['recherche'])) {
-            $where[] = "(a.titre LIKE ? OR a.description LIKE ? OR a.lieu LIKE ?)";
-            $term = '%' . $filters['recherche'] . '%';
-            $params[] = $term;
-            $params[] = $term;
-            $params[] = $term;
+            $conditions[] = "(a.titre LIKE ? OR a.description LIKE ? OR a.lieu LIKE ?)";
+            $terme = '%' . $filters['recherche'] . '%';
+            $params[] = $terme;
+            $params[] = $terme;
+            $params[] = $terme;
         }
+
         if (!empty($filters['ville'])) {
-            $where[] = "a.lieu LIKE ?";
+            $conditions[] = "a.lieu LIKE ?";
             $params[] = '%' . $filters['ville'] . '%';
         }
+
         if (!empty($filters['date_debut'])) {
-            $where[] = "a.date_debut >= ?";
+            $conditions[] = "a.date_debut >= ?";
             $params[] = $filters['date_debut'];
         }
+
         if (!empty($filters['date_fin'])) {
-            $where[] = "a.date_fin <= ?";
+            $conditions[] = "a.date_fin <= ?";
             $params[] = $filters['date_fin'];
         }
 
-        $sql = "
-            SELECT a.*, c.nom as categorie_nom, c.icone as categorie_icone,
-                   u.nom as organisateur_nom, u.prenom as organisateur_prenom,
-                   (SELECT COUNT(*) FROM inscription i WHERE i.activite_id = a.id AND i.statut = 'inscrit') as nb_inscrits
-            FROM activite a
-            JOIN categorie c ON a.categorie_id = c.id
-            JOIN utilisateur u ON a.organisateur_id = u.id
-            WHERE " . implode(' AND ', $where) . "
-            ORDER BY a.date_debut ASC
-        ";
+        $sql = "SELECT a.*, c.nom as categorie_nom, c.icone as categorie_icone,
+                       u.nom as organisateur_nom, u.prenom as organisateur_prenom,
+                       (SELECT COUNT(*) FROM inscription i WHERE i.activite_id = a.id AND i.statut = 'inscrit') as nb_inscrits
+                FROM activite a
+                JOIN categorie c ON a.categorie_id = c.id
+                JOIN utilisateur u ON a.organisateur_id = u.id
+                WHERE " . implode(' AND ', $conditions) . "
+                ORDER BY a.date_debut ASC";
 
-        if ($limit) {
-            $sql .= " LIMIT $limit OFFSET $offset";
+        if ($limit !== null) {
+            $sql = $sql . " LIMIT " . intval($limit) . " OFFSET " . intval($offset);
         }
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll();
+        $activites = $stmt->fetchAll();
+        return $activites;
     }
 
     public function countAll($filters = []) {
-        $where = ["a.statut = 'active'", "a.date_debut >= NOW()"];
+        $conditions = [];
+        $conditions[] = "a.statut = 'active'";
+        $conditions[] = "a.date_debut >= NOW()";
         $params = [];
 
         if (!empty($filters['categorie'])) {
-            $where[] = "a.categorie_id = ?";
+            $conditions[] = "a.categorie_id = ?";
             $params[] = $filters['categorie'];
         }
+
         if (!empty($filters['recherche'])) {
-            $where[] = "(a.titre LIKE ? OR a.description LIKE ? OR a.lieu LIKE ?)";
-            $term = '%' . $filters['recherche'] . '%';
-            $params[] = $term;
-            $params[] = $term;
-            $params[] = $term;
+            $conditions[] = "(a.titre LIKE ? OR a.description LIKE ? OR a.lieu LIKE ?)";
+            $terme = '%' . $filters['recherche'] . '%';
+            $params[] = $terme;
+            $params[] = $terme;
+            $params[] = $terme;
         }
 
-        $sql = "SELECT COUNT(*) as total FROM activite a WHERE " . implode(' AND ', $where);
+        $sql = "SELECT COUNT(*) as total FROM activite a WHERE " . implode(' AND ', $conditions);
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetch()['total'];
+        $resultat = $stmt->fetch();
+        return $resultat['total'];
     }
 
     public function getByOrganisateur($organisateurId) {
-        $stmt = $this->db->prepare("
-            SELECT a.*, c.nom as categorie_nom, c.icone as categorie_icone,
-                   (SELECT COUNT(*) FROM inscription i WHERE i.activite_id = a.id AND i.statut = 'inscrit') as nb_inscrits
-            FROM activite a
-            JOIN categorie c ON a.categorie_id = c.id
-            WHERE a.organisateur_id = ?
-            ORDER BY a.date_debut DESC
-        ");
+        $sql = "SELECT a.*, c.nom as categorie_nom, c.icone as categorie_icone,
+                       (SELECT COUNT(*) FROM inscription i WHERE i.activite_id = a.id AND i.statut = 'inscrit') as nb_inscrits
+                FROM activite a
+                JOIN categorie c ON a.categorie_id = c.id
+                WHERE a.organisateur_id = ?
+                ORDER BY a.date_debut DESC";
+
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$organisateurId]);
-        return $stmt->fetchAll();
+        $activites = $stmt->fetchAll();
+        return $activites;
     }
 
     public function create($data) {
-        $stmt = $this->db->prepare("
-            INSERT INTO activite (organisateur_id, titre, description, categorie_id, date_debut, date_fin,
-                                  lieu, adresse, nb_max_participants, type, conditions_participation, photo)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
+        $sql = "INSERT INTO activite (organisateur_id, titre, description, categorie_id, date_debut, date_fin,
+                                      lieu, adresse, nb_max_participants, type, conditions_participation, photo)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([
             $data['organisateur_id'],
             $data['titre'],
@@ -120,68 +132,80 @@ class Activity {
             $data['date_debut'],
             $data['date_fin'],
             $data['lieu'],
-            $data['adresse'] ?? null,
+            $data['adresse'],
             $data['nb_max_participants'],
-            $data['type'] ?? 'public',
-            $data['conditions_participation'] ?? null,
-            $data['photo'] ?? null,
+            $data['type'],
+            $data['conditions_participation'],
+            $data['photo'],
         ]);
+
         return $this->db->lastInsertId();
     }
 
     public function update($id, $data) {
-        $fields = [];
-        $values = [];
-        foreach ($data as $key => $value) {
-            $fields[] = "$key = ?";
-            $values[] = $value;
+        $parties = [];
+        $valeurs = [];
+
+        foreach ($data as $colonne => $valeur) {
+            $parties[] = "$colonne = ?";
+            $valeurs[] = $valeur;
         }
-        $values[] = $id;
-        $stmt = $this->db->prepare("UPDATE activite SET " . implode(', ', $fields) . " WHERE id = ?");
-        return $stmt->execute($values);
+
+        $valeurs[] = $id;
+
+        $sql = "UPDATE activite SET " . implode(', ', $parties) . " WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($valeurs);
     }
 
     public function delete($id) {
-        $stmt = $this->db->prepare("UPDATE activite SET statut = 'annulee' WHERE id = ?");
+        $sql = "UPDATE activite SET statut = 'annulee' WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$id]);
     }
 
     public function getRecent($limit = 6) {
-        $stmt = $this->db->prepare("
-            SELECT a.*, c.nom as categorie_nom, c.icone as categorie_icone,
-                   u.nom as organisateur_nom, u.prenom as organisateur_prenom,
-                   (SELECT COUNT(*) FROM inscription i WHERE i.activite_id = a.id AND i.statut = 'inscrit') as nb_inscrits
-            FROM activite a
-            JOIN categorie c ON a.categorie_id = c.id
-            JOIN utilisateur u ON a.organisateur_id = u.id
-            WHERE a.statut = 'active' AND a.date_debut >= NOW()
-            ORDER BY a.date_creation DESC
-            LIMIT ?
-        ");
+        $sql = "SELECT a.*, c.nom as categorie_nom, c.icone as categorie_icone,
+                       u.nom as organisateur_nom, u.prenom as organisateur_prenom,
+                       (SELECT COUNT(*) FROM inscription i WHERE i.activite_id = a.id AND i.statut = 'inscrit') as nb_inscrits
+                FROM activite a
+                JOIN categorie c ON a.categorie_id = c.id
+                JOIN utilisateur u ON a.organisateur_id = u.id
+                WHERE a.statut = 'active' AND a.date_debut >= NOW()
+                ORDER BY a.date_creation DESC
+                LIMIT ?";
+
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$limit]);
-        return $stmt->fetchAll();
+        $activites = $stmt->fetchAll();
+        return $activites;
     }
 
     public function getAllAdmin() {
-        $stmt = $this->db->query("
-            SELECT a.*, c.nom as categorie_nom,
-                   u.nom as organisateur_nom, u.prenom as organisateur_prenom,
-                   (SELECT COUNT(*) FROM inscription i WHERE i.activite_id = a.id AND i.statut = 'inscrit') as nb_inscrits
-            FROM activite a
-            JOIN categorie c ON a.categorie_id = c.id
-            JOIN utilisateur u ON a.organisateur_id = u.id
-            ORDER BY a.date_creation DESC
-        ");
-        return $stmt->fetchAll();
+        $sql = "SELECT a.*, c.nom as categorie_nom,
+                       u.nom as organisateur_nom, u.prenom as organisateur_prenom,
+                       (SELECT COUNT(*) FROM inscription i WHERE i.activite_id = a.id AND i.statut = 'inscrit') as nb_inscrits
+                FROM activite a
+                JOIN categorie c ON a.categorie_id = c.id
+                JOIN utilisateur u ON a.organisateur_id = u.id
+                ORDER BY a.date_creation DESC";
+
+        $stmt = $this->db->query($sql);
+        $activites = $stmt->fetchAll();
+        return $activites;
     }
 
     public function countAllAdmin() {
-        $stmt = $this->db->query("SELECT COUNT(*) as total FROM activite");
-        return $stmt->fetch()['total'];
+        $sql = "SELECT COUNT(*) as total FROM activite";
+        $stmt = $this->db->query($sql);
+        $resultat = $stmt->fetch();
+        return $resultat['total'];
     }
 
     public function countActive() {
-        $stmt = $this->db->query("SELECT COUNT(*) as total FROM activite WHERE statut = 'active' AND date_debut >= NOW()");
-        return $stmt->fetch()['total'];
+        $sql = "SELECT COUNT(*) as total FROM activite WHERE statut = 'active' AND date_debut >= NOW()";
+        $stmt = $this->db->query($sql);
+        $resultat = $stmt->fetch();
+        return $resultat['total'];
     }
 }
