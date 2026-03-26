@@ -7,13 +7,17 @@ class Category {
     }
 
     public function getAll() {
-        $stmt = $this->db->query("SELECT * FROM categorie ORDER BY nom");
-        return $stmt->fetchAll();
+        $sql = "SELECT * FROM categorie ORDER BY nom";
+        $stmt = $this->db->query($sql);
+        $categories = $stmt->fetchAll();
+        return $categories;
     }
 
     public function find($id) {
-        $stmt = $this->db->prepare("SELECT * FROM categorie WHERE id = ?");
+        $sql = "SELECT * FROM categorie WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
-        return $stmt->fetch();
+        $categorie = $stmt->fetch();
+        return $categorie;
     }
 }
