@@ -7,65 +7,71 @@ class Registration {
     }
 
     public function create($activiteId, $participantId) {
-        $stmt = $this->db->prepare("
-            INSERT INTO inscription (activite_id, participant_id) VALUES (?, ?)
-        ");
+        $sql = "INSERT INTO inscription (activite_id, participant_id) VALUES (?, ?)";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$activiteId, $participantId]);
     }
 
     public function cancel($activiteId, $participantId) {
-        $stmt = $this->db->prepare("
-            DELETE FROM inscription WHERE activite_id = ? AND participant_id = ? AND statut = 'inscrit'
-        ");
+        $sql = "DELETE FROM inscription WHERE activite_id = ? AND participant_id = ? AND statut = 'inscrit'";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$activiteId, $participantId]);
     }
 
     public function isRegistered($activiteId, $participantId) {
-        $stmt = $this->db->prepare("
-            SELECT COUNT(*) as total FROM inscription
-            WHERE activite_id = ? AND participant_id = ? AND statut = 'inscrit'
-        ");
+        $sql = "SELECT COUNT(*) as total FROM inscription
+                WHERE activite_id = ? AND participant_id = ? AND statut = 'inscrit'";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$activiteId, $participantId]);
-        return $stmt->fetch()['total'] > 0;
+        $resultat = $stmt->fetch();
+
+        if ($resultat['total'] > 0) {
+            return true;
+        }
+        return false;
     }
 
     public function countByActivity($activiteId) {
-        $stmt = $this->db->prepare("
-            SELECT COUNT(*) as total FROM inscription
-            WHERE activite_id = ? AND statut = 'inscrit'
-        ");
+        $sql = "SELECT COUNT(*) as total FROM inscription
+                WHERE activite_id = ? AND statut = 'inscrit'";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$activiteId]);
-        return $stmt->fetch()['total'];
+        $resultat = $stmt->fetch();
+        return $resultat['total'];
     }
 
     public function getByActivity($activiteId) {
-        $stmt = $this->db->prepare("
-            SELECT i.*, u.nom, u.prenom, u.email
-            FROM inscription i
-            JOIN utilisateur u ON i.participant_id = u.id
-            WHERE i.activite_id = ? AND i.statut = 'inscrit'
-            ORDER BY i.date_inscription ASC
-        ");
+        $sql = "SELECT i.*, u.nom, u.prenom, u.email
+                FROM inscription i
+                JOIN utilisateur u ON i.participant_id = u.id
+                WHERE i.activite_id = ? AND i.statut = 'inscrit'
+                ORDER BY i.date_inscription ASC";
+
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$activiteId]);
-        return $stmt->fetchAll();
+        $inscrits = $stmt->fetchAll();
+        return $inscrits;
     }
 
     public function getByUser($userId) {
-        $stmt = $this->db->prepare("
-            SELECT i.*, a.titre, a.date_debut, a.date_fin, a.lieu, a.photo, a.statut as activite_statut,
-                   c.nom as categorie_nom, c.icone as categorie_icone
-            FROM inscription i
-            JOIN activite a ON i.activite_id = a.id
-            JOIN categorie c ON a.categorie_id = c.id
-            WHERE i.participant_id = ? AND i.statut = 'inscrit'
-            ORDER BY a.date_debut ASC
-        ");
+        $sql = "SELECT i.*, a.titre, a.date_debut, a.date_fin, a.lieu, a.photo, a.statut as activite_statut,
+                       c.nom as categorie_nom, c.icone as categorie_icone
+                FROM inscription i
+                JOIN activite a ON i.activite_id = a.id
+                JOIN categorie c ON a.categorie_id = c.id
+                WHERE i.participant_id = ? AND i.statut = 'inscrit'
+                ORDER BY a.date_debut ASC";
+
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$userId]);
-        return $stmt->fetchAll();
+        $inscriptions = $stmt->fetchAll();
+        return $inscriptions;
     }
 
     public function countAll() {
-        $stmt = $this->db->query("SELECT COUNT(*) as total FROM inscription WHERE statut = 'inscrit'");
-        return $stmt->fetch()['total'];
+        $sql = "SELECT COUNT(*) as total FROM inscription WHERE statut = 'inscrit'";
+        $stmt = $this->db->query($sql);
+        $resultat = $stmt->fetch();
+        return $resultat['total'];
     }
 }
