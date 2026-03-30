@@ -8,88 +8,103 @@ class WaitingList {
 
     public function add($activiteId, $participantId) {
         $position = $this->getNextPosition($activiteId);
-        $stmt = $this->db->prepare("
-            INSERT INTO liste_attente (activite_id, participant_id, position) VALUES (?, ?, ?)
-        ");
+
+        $sql = "INSERT INTO liste_attente (activite_id, participant_id, position) VALUES (?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$activiteId, $participantId, $position]);
     }
 
     public function remove($activiteId, $participantId) {
-        $stmt = $this->db->prepare("
-            DELETE FROM liste_attente WHERE activite_id = ? AND participant_id = ?
-        ");
+        $sql = "DELETE FROM liste_attente WHERE activite_id = ? AND participant_id = ?";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$activiteId, $participantId]);
     }
 
     public function isOnWaitingList($activiteId, $participantId) {
-        $stmt = $this->db->prepare("
-            SELECT COUNT(*) as total FROM liste_attente
-            WHERE activite_id = ? AND participant_id = ?
-        ");
+        $sql = "SELECT COUNT(*) as total FROM liste_attente
+                WHERE activite_id = ? AND participant_id = ?";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$activiteId, $participantId]);
-        return $stmt->fetch()['total'] > 0;
+        $resultat = $stmt->fetch();
+
+        if ($resultat['total'] > 0) {
+            return true;
+        }
+        return false;
     }
 
     public function getFirst($activiteId) {
-        $stmt = $this->db->prepare("
-            SELECT la.*, u.nom, u.prenom, u.email
-            FROM liste_attente la
-            JOIN utilisateur u ON la.participant_id = u.id
-            WHERE la.activite_id = ?
-            ORDER BY la.position ASC
-            LIMIT 1
-        ");
+        $sql = "SELECT la.*, u.nom, u.prenom, u.email
+                FROM liste_attente la
+                JOIN utilisateur u ON la.participant_id = u.id
+                WHERE la.activite_id = ?
+                ORDER BY la.position ASC
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$activiteId]);
-        return $stmt->fetch();
+        $premier = $stmt->fetch();
+        return $premier;
     }
 
     public function getByActivity($activiteId) {
-        $stmt = $this->db->prepare("
-            SELECT la.*, u.nom, u.prenom, u.email
-            FROM liste_attente la
-            JOIN utilisateur u ON la.participant_id = u.id
-            WHERE la.activite_id = ?
-            ORDER BY la.position ASC
-        ");
+        $sql = "SELECT la.*, u.nom, u.prenom, u.email
+                FROM liste_attente la
+                JOIN utilisateur u ON la.participant_id = u.id
+                WHERE la.activite_id = ?
+                ORDER BY la.position ASC";
+
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$activiteId]);
-        return $stmt->fetchAll();
+        $liste = $stmt->fetchAll();
+        return $liste;
     }
 
     public function getPosition($activiteId, $participantId) {
-        $stmt = $this->db->prepare("
-            SELECT position FROM liste_attente
-            WHERE activite_id = ? AND participant_id = ?
-        ");
+        $sql = "SELECT position FROM liste_attente
+                WHERE activite_id = ? AND participant_id = ?";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$activiteId, $participantId]);
-        $result = $stmt->fetch();
-        return $result ? $result['position'] : null;
+        $resultat = $stmt->fetch();
+
+        if ($resultat) {
+            return $resultat['position'];
+        }
+        return null;
     }
 
     private function getNextPosition($activiteId) {
-        $stmt = $this->db->prepare("
-            SELECT COALESCE(MAX(position), 0) + 1 as next_pos FROM liste_attente WHERE activite_id = ?
-        ");
+        $sql = "SELECT MAX(position) as max_position FROM liste_attente WHERE activite_id = ?";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$activiteId]);
-        return $stmt->fetch()['next_pos'];
+        $resultat = $stmt->fetch();
+
+        if ($resultat['max_position'] === null) {
+            return 1;
+        }
+        return $resultat['max_position'] + 1;
     }
 
     public function promoteFirst($activiteId) {
-        $first = $this->getFirst($activiteId);
-        if ($first) {
-            $registration = new Registration();
-            $registration->create($activiteId, $first['participant_id']);
-            $this->remove($activiteId, $first['participant_id']);
+        $premier = $this->getFirst($activiteId);
 
-            $notification = new Notification();
-            $notification->create([
-                'utilisateur_id' => $first['participant_id'],
+        if ($premier) {
+            $inscriptionModel = new Registration();
+            $inscriptionModel->create($activiteId, $premier['participant_id']);
+
+            $this->remove($activiteId, $premier['participant_id']);
+
+            $notificationModel = new Notification();
+            $notificationModel->create([
+                'utilisateur_id' => $premier['participant_id'],
                 'type' => 'place_disponible',
                 'titre' => 'Place disponible !',
                 'message' => 'Une place s\'est libérée et vous avez été automatiquement inscrit à l\'activité.',
             ]);
 
-            return $first;
+            return $premier;
         }
+
         return null;
     }
 }
