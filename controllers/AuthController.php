@@ -1,5 +1,6 @@
 <?php
 class AuthController {
+
     public function login() {
         if (isLoggedIn()) {
             redirect('home');
@@ -8,8 +9,8 @@ class AuthController {
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = sanitize($_POST['email'] ?? '');
-            $password = $_POST['mot_de_passe'] ?? '';
+            $email = sanitize($_POST['email']);
+            $password = $_POST['mot_de_passe'];
 
             if (empty($email) || empty($password)) {
                 $errors[] = 'Veuillez remplir tous les champs.';
@@ -56,33 +57,38 @@ class AuthController {
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nom = sanitize($_POST['nom'] ?? '');
-            $prenom = sanitize($_POST['prenom'] ?? '');
-            $email = sanitize($_POST['email'] ?? '');
-            $password = $_POST['mot_de_passe'] ?? '';
-            $passwordConfirm = $_POST['mot_de_passe_confirm'] ?? '';
-            $role = sanitize($_POST['role'] ?? 'participant');
-            $telephone = sanitize($_POST['telephone'] ?? '');
-            $ville = sanitize($_POST['ville'] ?? '');
+            $nom = sanitize($_POST['nom']);
+            $prenom = sanitize($_POST['prenom']);
+            $email = sanitize($_POST['email']);
+            $password = $_POST['mot_de_passe'];
+            $passwordConfirm = $_POST['mot_de_passe_confirm'];
+            $role = sanitize($_POST['role']);
+            $telephone = sanitize($_POST['telephone']);
+            $ville = sanitize($_POST['ville']);
 
             if (empty($nom) || empty($prenom) || empty($email) || empty($password)) {
                 $errors[] = 'Veuillez remplir tous les champs obligatoires.';
             }
+
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $errors[] = 'Adresse e-mail invalide.';
             }
+
             if (strlen($password) < 8) {
                 $errors[] = 'Le mot de passe doit contenir au moins 8 caractères.';
             }
+
             if ($password !== $passwordConfirm) {
                 $errors[] = 'Les mots de passe ne correspondent pas.';
             }
-            if (!in_array($role, ['participant', 'organisateur'])) {
+
+            if ($role !== 'participant' && $role !== 'organisateur') {
                 $errors[] = 'Rôle invalide.';
             }
 
             $userModel = new User();
-            if ($userModel->findByEmail($email)) {
+            $utilisateurExistant = $userModel->findByEmail($email);
+            if ($utilisateurExistant) {
                 $errors[] = 'Cette adresse e-mail est déjà utilisée.';
             }
 
@@ -127,7 +133,7 @@ class AuthController {
         $success = false;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = sanitize($_POST['email'] ?? '');
+            $email = sanitize($_POST['email']);
 
             if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $errors[] = 'Veuillez entrer une adresse e-mail valide.';
