@@ -1,3 +1,6 @@
+# Ne jamais versionner un dossier Documents dans controllers (copie personnelle / erreur git add .)
+controllers/Documents/
+
 # Fichiers de configuration sensibles
 config/database.php
 
