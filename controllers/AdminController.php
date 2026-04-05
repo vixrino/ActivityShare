@@ -1,5 +1,6 @@
 <?php
 class AdminController {
+
     public function dashboard() {
         requireAdmin();
 
@@ -55,23 +56,29 @@ class AdminController {
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $action = $_POST['faq_action'] ?? '';
+            $action = $_POST['faq_action'];
 
             if ($action === 'create') {
                 $faqModel->create([
-                    'question' => sanitize($_POST['question'] ?? ''),
-                    'reponse' => sanitize($_POST['reponse'] ?? ''),
-                    'ordre' => intval($_POST['ordre'] ?? 0),
+                    'question' => sanitize($_POST['question']),
+                    'reponse' => sanitize($_POST['reponse']),
+                    'ordre' => intval($_POST['ordre']),
                 ]);
                 $_SESSION['flash'] = ['type' => 'success', 'message' => 'Question ajoutée.'];
-            } elseif ($action === 'update') {
-                $faqModel->update(intval($_POST['faq_id']), [
-                    'question' => sanitize($_POST['question'] ?? ''),
-                    'reponse' => sanitize($_POST['reponse'] ?? ''),
+            }
+
+            if ($action === 'update') {
+                $faqId = intval($_POST['faq_id']);
+                $faqModel->update($faqId, [
+                    'question' => sanitize($_POST['question']),
+                    'reponse' => sanitize($_POST['reponse']),
                 ]);
                 $_SESSION['flash'] = ['type' => 'success', 'message' => 'Question modifiée.'];
-            } elseif ($action === 'delete') {
-                $faqModel->delete(intval($_POST['faq_id']));
+            }
+
+            if ($action === 'delete') {
+                $faqId = intval($_POST['faq_id']);
+                $faqModel->delete($faqId);
                 $_SESSION['flash'] = ['type' => 'success', 'message' => 'Question supprimée.'];
             }
 
@@ -92,7 +99,8 @@ class AdminController {
         $contactModel = new ContactMessage();
 
         if (isset($_GET['mark_read'])) {
-            $contactModel->markAsRead(intval($_GET['mark_read']));
+            $messageId = intval($_GET['mark_read']);
+            $contactModel->markAsRead($messageId);
             redirect('admin-messages');
         }
 
@@ -107,8 +115,12 @@ class AdminController {
     public function toggleUser() {
         requireAdmin();
 
-        $id = intval($_GET['id'] ?? 0);
-        if ($id && $id != $_SESSION['user_id']) {
+        $id = 0;
+        if (isset($_GET['id'])) {
+            $id = intval($_GET['id']);
+        }
+
+        if ($id > 0 && $id != $_SESSION['user_id']) {
             $userModel = new User();
             $userModel->toggleActive($id);
             $_SESSION['flash'] = ['type' => 'success', 'message' => 'Statut de l\'utilisateur modifié.'];
@@ -120,8 +132,12 @@ class AdminController {
     public function deleteActivity() {
         requireAdmin();
 
-        $id = intval($_GET['id'] ?? 0);
-        if ($id) {
+        $id = 0;
+        if (isset($_GET['id'])) {
+            $id = intval($_GET['id']);
+        }
+
+        if ($id > 0) {
             $activityModel = new Activity();
             $activityModel->delete($id);
             $_SESSION['flash'] = ['type' => 'success', 'message' => 'Activité supprimée.'];
