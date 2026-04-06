@@ -1,25 +1,37 @@
 <?php
 class ContactController {
+
     public function contact() {
         $errors = [];
         $success = false;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $data = [
-                'nom' => sanitize($_POST['nom'] ?? ''),
-                'email' => sanitize($_POST['email'] ?? ''),
-                'sujet' => sanitize($_POST['sujet'] ?? ''),
-                'message' => sanitize($_POST['message'] ?? ''),
-            ];
+            $nom = sanitize($_POST['nom']);
+            $email = sanitize($_POST['email']);
+            $sujet = sanitize($_POST['sujet']);
+            $message = sanitize($_POST['message']);
 
-            if (empty($data['nom'])) $errors[] = 'Le nom est requis.';
-            if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'E-mail invalide.';
-            if (empty($data['sujet'])) $errors[] = 'Le sujet est requis.';
-            if (empty($data['message'])) $errors[] = 'Le message est requis.';
+            if (empty($nom)) {
+                $errors[] = 'Le nom est requis.';
+            }
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'E-mail invalide.';
+            }
+            if (empty($sujet)) {
+                $errors[] = 'Le sujet est requis.';
+            }
+            if (empty($message)) {
+                $errors[] = 'Le message est requis.';
+            }
 
             if (empty($errors)) {
                 $contactModel = new ContactMessage();
-                $contactModel->create($data);
+                $contactModel->create([
+                    'nom' => $nom,
+                    'email' => $email,
+                    'sujet' => $sujet,
+                    'message' => $message,
+                ]);
                 $success = true;
             }
         }
