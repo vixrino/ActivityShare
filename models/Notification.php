@@ -18,9 +18,9 @@ class Notification {
     }
 
     public function getByUser($userId, $limit = 20) {
-        $sql = "SELECT * FROM notification WHERE utilisateur_id = ? ORDER BY date_creation DESC LIMIT ?";
+        $sql = "SELECT * FROM notification WHERE utilisateur_id = ? ORDER BY date_creation DESC LIMIT " . intval($limit);
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$userId, $limit]);
+        $stmt->execute([$userId]);
         $notifications = $stmt->fetchAll();
         return $notifications;
     }

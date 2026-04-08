@@ -173,10 +173,10 @@ class Activity {
                 JOIN utilisateur u ON a.organisateur_id = u.id
                 WHERE a.statut = 'active' AND a.date_debut >= NOW()
                 ORDER BY a.date_creation DESC
-                LIMIT ?";
+                LIMIT " . intval($limit);
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$limit]);
+        $stmt->execute();
         $activites = $stmt->fetchAll();
         return $activites;
     }
