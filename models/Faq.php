@@ -7,28 +7,43 @@ class Faq {
     }
 
     public function getAll() {
-        $stmt = $this->db->query("SELECT * FROM faq ORDER BY ordre ASC");
-        return $stmt->fetchAll();
+        $sql = "SELECT * FROM faq ORDER BY ordre ASC";
+        $stmt = $this->db->query($sql);
+        $faqs = $stmt->fetchAll();
+        return $faqs;
     }
 
     public function find($id) {
-        $stmt = $this->db->prepare("SELECT * FROM faq WHERE id = ?");
+        $sql = "SELECT * FROM faq WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
-        return $stmt->fetch();
+        $faq = $stmt->fetch();
+        return $faq;
     }
 
     public function create($data) {
-        $stmt = $this->db->prepare("INSERT INTO faq (question, reponse, ordre) VALUES (?, ?, ?)");
-        return $stmt->execute([$data['question'], $data['reponse'], $data['ordre'] ?? 0]);
+        $sql = "INSERT INTO faq (question, reponse, ordre) VALUES (?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            $data['question'],
+            $data['reponse'],
+            $data['ordre'],
+        ]);
     }
 
     public function update($id, $data) {
-        $stmt = $this->db->prepare("UPDATE faq SET question = ?, reponse = ? WHERE id = ?");
-        return $stmt->execute([$data['question'], $data['reponse'], $id]);
+        $sql = "UPDATE faq SET question = ?, reponse = ? WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            $data['question'],
+            $data['reponse'],
+            $id,
+        ]);
     }
 
     public function delete($id) {
-        $stmt = $this->db->prepare("DELETE FROM faq WHERE id = ?");
+        $sql = "DELETE FROM faq WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$id]);
     }
 }

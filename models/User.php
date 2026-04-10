@@ -7,81 +7,98 @@ class User {
     }
 
     public function find($id) {
-        $stmt = $this->db->prepare("SELECT * FROM utilisateur WHERE id = ?");
+        $sql = "SELECT * FROM utilisateur WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
-        return $stmt->fetch();
+        $user = $stmt->fetch();
+        return $user;
     }
 
     public function findByEmail($email) {
-        $stmt = $this->db->prepare("SELECT * FROM utilisateur WHERE email = ?");
+        $sql = "SELECT * FROM utilisateur WHERE email = ?";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$email]);
-        return $stmt->fetch();
+        $user = $stmt->fetch();
+        return $user;
     }
 
     public function create($data) {
-        $stmt = $this->db->prepare("
-            INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role, telephone, ville)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ");
+        $sql = "INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, role, telephone, ville)
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
+
+        $motDePasseHash = password_hash($data['mot_de_passe'], PASSWORD_DEFAULT);
+
         $stmt->execute([
             $data['nom'],
             $data['prenom'],
             $data['email'],
-            password_hash($data['mot_de_passe'], PASSWORD_DEFAULT),
-            $data['role'] ?? 'participant',
-            $data['telephone'] ?? null,
-            $data['ville'] ?? null,
+            $motDePasseHash,
+            $data['role'],
+            $data['telephone'],
+            $data['ville'],
         ]);
+
         return $this->db->lastInsertId();
     }
 
     public function update($id, $data) {
-        $fields = [];
-        $values = [];
-        foreach ($data as $key => $value) {
-            $fields[] = "$key = ?";
-            $values[] = $value;
+        $parties = [];
+        $valeurs = [];
+
+        foreach ($data as $colonne => $valeur) {
+            $parties[] = "$colonne = ?";
+            $valeurs[] = $valeur;
         }
-        $values[] = $id;
-        $stmt = $this->db->prepare("UPDATE utilisateur SET " . implode(', ', $fields) . " WHERE id = ?");
-        return $stmt->execute($values);
+
+        $valeurs[] = $id;
+
+        $sql = "UPDATE utilisateur SET " . implode(', ', $parties) . " WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($valeurs);
     }
 
-    public function updatePassword($id, $password) {
-        $stmt = $this->db->prepare("UPDATE utilisateur SET mot_de_passe = ? WHERE id = ?");
-        return $stmt->execute([password_hash($password, PASSWORD_DEFAULT), $id]);
+    public function updatePassword($id, $nouveauMotDePasse) {
+        $sql = "UPDATE utilisateur SET mot_de_passe = ? WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $hash = password_hash($nouveauMotDePasse, PASSWORD_DEFAULT);
+        return $stmt->execute([$hash, $id]);
     }
 
-    public function getAll($limit = null, $offset = 0) {
+    public function getAll() {
         $sql = "SELECT * FROM utilisateur ORDER BY date_inscription DESC";
-        if ($limit) {
-            $sql .= " LIMIT $limit OFFSET $offset";
-        }
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
 
     public function countAll() {
-        $stmt = $this->db->query("SELECT COUNT(*) as total FROM utilisateur");
-        return $stmt->fetch()['total'];
+        $sql = "SELECT COUNT(*) as total FROM utilisateur";
+        $stmt = $this->db->query($sql);
+        $resultat = $stmt->fetch();
+        return $resultat['total'];
     }
 
     public function countByRole($role) {
-        $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM utilisateur WHERE role = ?");
+        $sql = "SELECT COUNT(*) as total FROM utilisateur WHERE role = ?";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$role]);
-        return $stmt->fetch()['total'];
+        $resultat = $stmt->fetch();
+        return $resultat['total'];
     }
 
     public function toggleActive($id) {
-        $stmt = $this->db->prepare("UPDATE utilisateur SET actif = NOT actif WHERE id = ?");
+        $sql = "UPDATE utilisateur SET actif = NOT actif WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$id]);
     }
 
-    public function verify($email, $password) {
+    public function verify($email, $motDePasse) {
         $user = $this->findByEmail($email);
-        if ($user && password_verify($password, $user['mot_de_passe'])) {
+
+        if ($user && password_verify($motDePasse, $user['mot_de_passe'])) {
             return $user;
         }
+
         return false;
     }
 }

@@ -7,10 +7,8 @@ class Notification {
     }
 
     public function create($data) {
-        $stmt = $this->db->prepare("
-            INSERT INTO notification (utilisateur_id, type, titre, message)
-            VALUES (?, ?, ?, ?)
-        ");
+        $sql = "INSERT INTO notification (utilisateur_id, type, titre, message) VALUES (?, ?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             $data['utilisateur_id'],
             $data['type'],
@@ -20,32 +18,30 @@ class Notification {
     }
 
     public function getByUser($userId, $limit = 20) {
-        $stmt = $this->db->prepare("
-            SELECT * FROM notification
-            WHERE utilisateur_id = ?
-            ORDER BY date_creation DESC
-            LIMIT ?
-        ");
-        $stmt->execute([$userId, $limit]);
-        return $stmt->fetchAll();
+        $sql = "SELECT * FROM notification WHERE utilisateur_id = ? ORDER BY date_creation DESC LIMIT " . intval($limit);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$userId]);
+        $notifications = $stmt->fetchAll();
+        return $notifications;
     }
 
     public function countUnread($userId) {
-        $stmt = $this->db->prepare("
-            SELECT COUNT(*) as total FROM notification
-            WHERE utilisateur_id = ? AND lue = 0
-        ");
+        $sql = "SELECT COUNT(*) as total FROM notification WHERE utilisateur_id = ? AND lue = 0";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([$userId]);
-        return $stmt->fetch()['total'];
+        $resultat = $stmt->fetch();
+        return $resultat['total'];
     }
 
     public function markAsRead($id) {
-        $stmt = $this->db->prepare("UPDATE notification SET lue = 1 WHERE id = ?");
+        $sql = "UPDATE notification SET lue = 1 WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$id]);
     }
 
     public function markAllAsRead($userId) {
-        $stmt = $this->db->prepare("UPDATE notification SET lue = 1 WHERE utilisateur_id = ?");
+        $sql = "UPDATE notification SET lue = 1 WHERE utilisateur_id = ?";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$userId]);
     }
 }
