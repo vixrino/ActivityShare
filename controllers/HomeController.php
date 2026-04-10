@@ -3,12 +3,11 @@ class HomeController {
     public function index() {
         $activityModel = new Activity();
         $categoryModel = new Category();
+        $userModel = new User();
 
         $activitesRecentes = $activityModel->getRecent(6);
         $categories = $categoryModel->getAll();
         $totalActivites = $activityModel->countActive();
-
-        $userModel = new User();
         $totalUtilisateurs = $userModel->countAll();
 
         include __DIR__ . '/../views/layout/header.php';

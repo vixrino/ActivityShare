@@ -7,9 +7,8 @@ class ContactMessage {
     }
 
     public function create($data) {
-        $stmt = $this->db->prepare("
-            INSERT INTO contact_message (nom, email, sujet, message) VALUES (?, ?, ?, ?)
-        ");
+        $sql = "INSERT INTO contact_message (nom, email, sujet, message) VALUES (?, ?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             $data['nom'],
             $data['email'],
@@ -19,17 +18,22 @@ class ContactMessage {
     }
 
     public function getAll() {
-        $stmt = $this->db->query("SELECT * FROM contact_message ORDER BY date_envoi DESC");
-        return $stmt->fetchAll();
+        $sql = "SELECT * FROM contact_message ORDER BY date_envoi DESC";
+        $stmt = $this->db->query($sql);
+        $messages = $stmt->fetchAll();
+        return $messages;
     }
 
     public function countUnread() {
-        $stmt = $this->db->query("SELECT COUNT(*) as total FROM contact_message WHERE lu = 0");
-        return $stmt->fetch()['total'];
+        $sql = "SELECT COUNT(*) as total FROM contact_message WHERE lu = 0";
+        $stmt = $this->db->query($sql);
+        $resultat = $stmt->fetch();
+        return $resultat['total'];
     }
 
     public function markAsRead($id) {
-        $stmt = $this->db->prepare("UPDATE contact_message SET lu = 1 WHERE id = ?");
+        $sql = "UPDATE contact_message SET lu = 1 WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute([$id]);
     }
 }

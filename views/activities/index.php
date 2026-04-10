@@ -11,14 +11,26 @@
             <input type="hidden" name="page" value="activites">
             <div class="filters-row">
                 <div class="form-group">
+                    <?php
+                    $recherche = '';
+                    if (isset($_GET['recherche'])) {
+                        $recherche = sanitize($_GET['recherche']);
+                    }
+                    ?>
                     <input type="text" name="recherche" class="form-control" placeholder="Mot-clé..."
-                           value="<?= sanitize($_GET['recherche'] ?? '') ?>">
+                           value="<?= $recherche ?>">
                 </div>
                 <div class="form-group">
                     <select name="categorie" class="form-control">
                         <option value="">Toutes les catégories</option>
                         <?php foreach ($categories as $cat): ?>
-                            <option value="<?= $cat['id'] ?>" <?= ($_GET['categorie'] ?? '') == $cat['id'] ? 'selected' : '' ?>>
+                            <?php
+                            $selected = '';
+                            if (isset($_GET['categorie']) && $_GET['categorie'] == $cat['id']) {
+                                $selected = 'selected';
+                            }
+                            ?>
+                            <option value="<?= $cat['id'] ?>" <?= $selected ?>>
                                 <?= sanitize($cat['nom']) ?>
                             </option>
                         <?php endforeach; ?>
@@ -27,20 +39,28 @@
                 <div class="form-group">
                     <select name="type" class="form-control">
                         <option value="">Tous les types</option>
-                        <option value="public" <?= ($_GET['type'] ?? '') === 'public' ? 'selected' : '' ?>>Public</option>
-                        <option value="prive" <?= ($_GET['type'] ?? '') === 'prive' ? 'selected' : '' ?>>Privé</option>
+                        <option value="public" <?php if (isset($_GET['type']) && $_GET['type'] === 'public') echo 'selected'; ?>>Public</option>
+                        <option value="prive" <?php if (isset($_GET['type']) && $_GET['type'] === 'prive') echo 'selected'; ?>>Privé</option>
                     </select>
                 </div>
                 <div class="form-group">
+                    <?php
+                    $ville = '';
+                    if (isset($_GET['ville'])) {
+                        $ville = sanitize($_GET['ville']);
+                    }
+                    ?>
                     <input type="text" name="ville" class="form-control" placeholder="Ville..."
-                           value="<?= sanitize($_GET['ville'] ?? '') ?>">
+                           value="<?= $ville ?>">
                 </div>
                 <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
                 <a href="index.php?page=activites" class="btn btn-outline">Réinitialiser</a>
             </div>
         </form>
 
-        <p class="results-count"><?= $total ?> activité<?= $total > 1 ? 's' : '' ?> trouvée<?= $total > 1 ? 's' : '' ?></p>
+        <p class="results-count">
+            <?= $total ?> activité<?php if ($total > 1) echo 's'; ?> trouvée<?php if ($total > 1) echo 's'; ?>
+        </p>
 
         <?php if (empty($activites)): ?>
             <div class="empty-state">
@@ -72,12 +92,23 @@
                                 <span><i class="fas fa-map-marker-alt"></i> <?= sanitize($activite['lieu']) ?></span>
                             </div>
                             <div class="activity-card-footer">
-                                <span class="activity-card-places <?= ($activite['nb_max_participants'] - $activite['nb_inscrits']) <= 0 ? 'full' : '' ?>">
+                                <?php
+                                $placesRestantes = $activite['nb_max_participants'] - $activite['nb_inscrits'];
+                                $classePlaces = '';
+                                if ($placesRestantes <= 0) {
+                                    $classePlaces = 'full';
+                                }
+                                ?>
+                                <span class="activity-card-places <?= $classePlaces ?>">
                                     <i class="fas fa-users"></i>
                                     <?= $activite['nb_inscrits'] ?>/<?= $activite['nb_max_participants'] ?> places
                                 </span>
                                 <span class="activity-card-type <?= $activite['type'] ?>">
-                                    <?= $activite['type'] === 'public' ? 'Public' : 'Privé' ?>
+                                    <?php if ($activite['type'] === 'public'): ?>
+                                        Public
+                                    <?php else: ?>
+                                        Privé
+                                    <?php endif; ?>
                                 </span>
                             </div>
                         </div>
@@ -88,12 +119,27 @@
             <?php if ($totalPages > 1): ?>
                 <div class="pagination">
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="index.php?page=activites&p=<?= $i ?>&<?= http_build_query(array_filter([
-                            'recherche' => $_GET['recherche'] ?? '',
-                            'categorie' => $_GET['categorie'] ?? '',
-                            'type' => $_GET['type'] ?? '',
-                            'ville' => $_GET['ville'] ?? '',
-                        ])) ?>" class="pagination-link <?= $i == ($page ?? 1) ? 'active' : '' ?>">
+                        <?php
+                        $lien = 'index.php?page=activites&p=' . $i;
+                        if (isset($_GET['recherche']) && $_GET['recherche'] !== '') {
+                            $lien = $lien . '&recherche=' . urlencode($_GET['recherche']);
+                        }
+                        if (isset($_GET['categorie']) && $_GET['categorie'] !== '') {
+                            $lien = $lien . '&categorie=' . urlencode($_GET['categorie']);
+                        }
+                        if (isset($_GET['type']) && $_GET['type'] !== '') {
+                            $lien = $lien . '&type=' . urlencode($_GET['type']);
+                        }
+                        if (isset($_GET['ville']) && $_GET['ville'] !== '') {
+                            $lien = $lien . '&ville=' . urlencode($_GET['ville']);
+                        }
+
+                        $classeActive = 'pagination-link';
+                        if ($i == $page) {
+                            $classeActive = 'pagination-link active';
+                        }
+                        ?>
+                        <a href="<?= $lien ?>" class="<?= $classeActive ?>">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
