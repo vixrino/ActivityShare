@@ -222,9 +222,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--danger) !important;
 }
 
-/* ============================================
-   Buttons
-   ============================================ */
+/*Buttons*/
 .btn {
     display: inline-flex;
     align-items: center;
@@ -302,9 +300,7 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
 }
 
-/* ============================================
-   Alerts
-   ============================================ */
+
 .alert {
     padding: 14px 20px;
     border-radius: var(--radius-sm);
@@ -361,9 +357,7 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 1;
 }
 
-/* ============================================
-   Hero Section
-   ============================================ */
+
 .hero {
     background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
     color: var(--white);
@@ -558,9 +552,7 @@ h1, h2, h3, h4, h5, h6 {
     align-items: center;
 }
 
-/* ============================================
-   Categories Grid
-   ============================================ */
+/*Categories*/
 .categories-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -611,9 +603,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 14px;
 }
 
-/* ============================================
-   Activities Grid
-   ============================================ */
+/* Activities Grid */
 .activities-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -741,9 +731,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--orange);
 }
 
-/* ============================================
-   Steps (How it works)
-   ============================================ */
+
 .steps-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -796,9 +784,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.95rem;
 }
 
-/* ============================================
-   Activity Detail
-   ============================================ */
+/* Activity Detail*/
 .activity-detail {
     display: grid;
     grid-template-columns: 1fr 360px;
@@ -988,9 +974,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--orange);
 }
 
-/* ============================================
-   Auth Pages
-   ============================================ */
+
 .auth-container {
     display: flex;
     justify-content: center;
@@ -1033,9 +1017,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 14px;
 }
 
-/* ============================================
-   Forms
-   ============================================ */
+/*Forms */
 .form-container {
     max-width: 700px;
     margin: 0 auto;
@@ -1196,9 +1178,7 @@ textarea.form-control {
     color: var(--green);
 }
 
-/* ============================================
-   Filters Bar
-   ============================================ */
+/*Barre de filtres*/
 .filters-bar {
     background: var(--white);
     border: 1px solid var(--gray);
@@ -1226,9 +1206,7 @@ textarea.form-control {
     font-size: 14px;
 }
 
-/* ============================================
-   Pagination
-   ============================================ */
+
 .pagination {
     display: flex;
     justify-content: center;
@@ -1256,9 +1234,7 @@ textarea.form-control {
     color: var(--white);
 }
 
-/* ============================================
-   Profile
-   ============================================ */
+/*Profil*/
 .profile-layout {
     display: grid;
     grid-template-columns: 320px 1fr;
@@ -1463,9 +1439,7 @@ textarea.form-control {
 .text-success { color: var(--green) !important; }
 .text-muted { color: var(--text-light) !important; }
 
-/* ============================================
-   Admin
-   ============================================ */
+/* Admin*/
 .admin-nav {
     display: flex;
     gap: 8px;
@@ -1552,9 +1526,7 @@ textarea.form-control {
     font-size: 14px;
 }
 
-/* ============================================
-   Tables
-   ============================================ */
+/* Tables */
 .table-responsive {
     overflow-x: auto;
 }
@@ -1619,9 +1591,7 @@ textarea.form-control {
     color: var(--text-light);
 }
 
-/* ============================================
-   FAQ
-   ============================================ */
+/*FAQ*/
 .faq-container {
     max-width: 800px;
     margin: 0 auto;
@@ -1719,9 +1689,7 @@ textarea.form-control {
     display: inline;
 }
 
-/* ============================================
-   Contact
-   ============================================ */
+/* Contact */
 .contact-layout {
     display: grid;
     grid-template-columns: 1fr 380px;
@@ -1799,9 +1767,7 @@ textarea.form-control {
     line-height: 1.6;
 }
 
-/* ============================================
-   Legal Content
-   ============================================ */
+/* contenu legal*/
 .legal-content {
     max-width: 800px;
     margin: 0 auto;
@@ -1833,9 +1799,7 @@ textarea.form-control {
     line-height: 1.6;
 }
 
-/* ============================================
-   Empty State
-   ============================================ */
+
 .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -1869,9 +1833,7 @@ textarea.form-control {
     display: block;
 }
 
-/* ============================================
-   Error Page
-   ============================================ */
+/* Error page*/
 .error-page {
     min-height: 100vh;
     display: flex;
@@ -1902,9 +1864,7 @@ textarea.form-control {
     margin-bottom: 32px;
 }
 
-/* ============================================
-   Current Photo
-   ============================================ */
+
 .current-photo {
     margin-bottom: 16px;
 }
@@ -1922,9 +1882,7 @@ textarea.form-control {
     margin-bottom: 8px;
 }
 
-/* ============================================
-   Footer
-   ============================================ */
+
 .footer {
     background: var(--dark);
     color: rgba(255, 255, 255, 0.75);
@@ -2017,18 +1975,14 @@ textarea.form-control {
     opacity: 0.6;
 }
 
-/* ============================================
-   Utility Classes
-   ============================================ */
+
 .text-center { text-align: center; }
 .mt-1 { margin-top: 12px; }
 .mt-2 { margin-top: 24px; }
 .mb-1 { margin-bottom: 12px; }
 .mb-2 { margin-bottom: 24px; }
 
-/* ============================================
-   Responsive
-   ============================================ */
+/*Responsive*/
 @media (max-width: 992px) {
     .hero h1 {
         font-size: 2rem;
