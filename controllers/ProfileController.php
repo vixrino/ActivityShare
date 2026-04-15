@@ -1,5 +1,6 @@
 <?php
 class ProfileController {
+
     public function show() {
         requireLogin();
 
@@ -29,15 +30,21 @@ class ProfileController {
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $nom = sanitize($_POST['nom']);
+            $prenom = sanitize($_POST['prenom']);
+            $telephone = sanitize($_POST['telephone']);
+            $ville = sanitize($_POST['ville']);
+            $bio = sanitize($_POST['bio']);
+
             $data = [
-                'nom' => sanitize($_POST['nom'] ?? ''),
-                'prenom' => sanitize($_POST['prenom'] ?? ''),
-                'telephone' => sanitize($_POST['telephone'] ?? ''),
-                'ville' => sanitize($_POST['ville'] ?? ''),
-                'bio' => sanitize($_POST['bio'] ?? ''),
+                'nom' => $nom,
+                'prenom' => $prenom,
+                'telephone' => $telephone,
+                'ville' => $ville,
+                'bio' => $bio,
             ];
 
-            if (empty($data['nom']) || empty($data['prenom'])) {
+            if (empty($nom) || empty($prenom)) {
                 $errors[] = 'Le nom et le prénom sont requis.';
             }
 
@@ -49,22 +56,28 @@ class ProfileController {
             }
 
             if (!empty($_POST['nouveau_mot_de_passe'])) {
-                if (strlen($_POST['nouveau_mot_de_passe']) < 8) {
+                $nouveauMdp = $_POST['nouveau_mot_de_passe'];
+                $confirmerMdp = $_POST['confirmer_mot_de_passe'];
+
+                if (strlen($nouveauMdp) < 8) {
                     $errors[] = 'Le mot de passe doit contenir au moins 8 caractères.';
-                } elseif ($_POST['nouveau_mot_de_passe'] !== ($_POST['confirmer_mot_de_passe'] ?? '')) {
+                } else if ($nouveauMdp !== $confirmerMdp) {
                     $errors[] = 'Les mots de passe ne correspondent pas.';
                 } else {
-                    $userModel->updatePassword($_SESSION['user_id'], $_POST['nouveau_mot_de_passe']);
+                    $userModel->updatePassword($_SESSION['user_id'], $nouveauMdp);
                 }
             }
 
             if (empty($errors)) {
                 $userModel->update($_SESSION['user_id'], $data);
+
                 $_SESSION['user_nom'] = $data['nom'];
                 $_SESSION['user_prenom'] = $data['prenom'];
+
                 if (isset($data['photo_profil'])) {
                     $_SESSION['user_photo'] = $data['photo_profil'];
                 }
+
                 $_SESSION['flash'] = ['type' => 'success', 'message' => 'Profil mis à jour avec succès.'];
                 redirect('profil');
             }
