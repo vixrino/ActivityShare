@@ -12,6 +12,12 @@ class Registration {
         return $stmt->execute([$activiteId, $participantId]);
     }
 
+    public function createWithPayment($activiteId, $participantId, $paiementId) {
+        $sql = "INSERT INTO inscription (activite_id, participant_id, paiement_id) VALUES (?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$activiteId, $participantId, $paiementId]);
+    }
+
     public function cancel($activiteId, $participantId) {
         $sql = "DELETE FROM inscription WHERE activite_id = ? AND participant_id = ? AND statut = 'inscrit'";
         $stmt = $this->db->prepare($sql);

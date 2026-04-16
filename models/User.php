@@ -92,6 +92,24 @@ class User {
         return $stmt->execute([$id]);
     }
 
+    public function delete($id) {
+        $sql = "DELETE FROM utilisateur WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$id]);
+    }
+
+    public function search($terme, $limit = 20) {
+        $sql = "SELECT id, nom, prenom, email, photo_profil, role
+                FROM utilisateur
+                WHERE actif = 1 AND (nom LIKE ? OR prenom LIKE ? OR email LIKE ?)
+                ORDER BY prenom ASC
+                LIMIT " . intval($limit);
+        $terme = '%' . $terme . '%';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$terme, $terme, $terme]);
+        return $stmt->fetchAll();
+    }
+
     public function verify($email, $motDePasse) {
         $user = $this->findByEmail($email);
 
