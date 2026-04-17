@@ -57,10 +57,24 @@
                         </div>
                     </div>
                     <div class="info-item">
-                        <i class="fas fa-user"></i>
+                        <i class="fas fa-user" aria-hidden="true"></i>
                         <div>
                             <strong>Organisateur</strong>
                             <span><?= sanitize($activite['organisateur_prenom'] . ' ' . $activite['organisateur_nom']) ?></span>
+                            <?php if (isLoggedIn() && $_SESSION['user_id'] != $activite['organisateur_id']): ?>
+                                <small><a href="index.php?page=conversation&user=<?= intval($activite['organisateur_id']) ?>">
+                                    <i class="fas fa-comment" aria-hidden="true"></i> Contacter
+                                </a></small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-euro-sign" aria-hidden="true"></i>
+                        <div>
+                            <strong>Tarif</strong>
+                            <span class="<?= floatval($activite['prix']) > 0 ? 'text-orange' : 'text-green' ?>">
+                                <strong><?= formatPrice($activite['prix'] ?? 0) ?></strong>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -114,27 +128,44 @@
                             </a>
                         </div>
                     <?php elseif ($isRegistered): ?>
-                        <a href="index.php?page=desinscription-activite&id=<?= $activite['id'] ?>" class="btn btn-danger btn-block"
-                           onclick="return confirm('Voulez-vous vraiment vous désinscrire ?')">
-                            <i class="fas fa-times"></i> Se désinscrire
+                        <a href="index.php?page=chat-activite&id=<?= $activite['id'] ?>" class="btn btn-primary btn-block">
+                            <i class="fas fa-comments" aria-hidden="true"></i> Accéder au chat
                         </a>
-                        <p class="text-center text-success mt-1"><i class="fas fa-check-circle"></i> Vous êtes inscrit</p>
+                        <a href="index.php?page=desinscription-activite&id=<?= $activite['id'] ?>" class="btn btn-outline btn-block"
+                           onclick="return confirm('Voulez-vous vraiment vous désinscrire ?')">
+                            <i class="fas fa-times" aria-hidden="true"></i> Se désinscrire
+                        </a>
+                        <p class="text-center text-success mt-1"><i class="fas fa-check-circle" aria-hidden="true"></i> Vous êtes inscrit</p>
                     <?php elseif ($isOnWaitingList): ?>
                         <a href="index.php?page=desinscription-activite&id=<?= $activite['id'] ?>" class="btn btn-outline btn-block"
                            onclick="return confirm('Voulez-vous quitter la liste d\'attente ?')">
-                            <i class="fas fa-times"></i> Quitter la liste d'attente
+                            <i class="fas fa-times" aria-hidden="true"></i> Quitter la liste d'attente
                         </a>
-                        <p class="text-center mt-1"><i class="fas fa-hourglass-half"></i> Position <?= $waitingPosition ?> en liste d'attente</p>
+                        <p class="text-center mt-1"><i class="fas fa-hourglass-half" aria-hidden="true"></i> Position <?= $waitingPosition ?> en liste d'attente</p>
+                    <?php elseif (floatval($activite['prix']) > 0): ?>
+                        <a href="index.php?page=panier-ajouter&id=<?= $activite['id'] ?>" class="btn btn-primary btn-block">
+                            <i class="fas fa-cart-plus" aria-hidden="true"></i> Ajouter au panier — <?= formatPrice($activite['prix']) ?>
+                        </a>
                     <?php else: ?>
                         <a href="index.php?page=inscription-activite&id=<?= $activite['id'] ?>" class="btn btn-primary btn-block">
                             <?php if ($placesRestantes > 0): ?>
-                                <i class="fas fa-check"></i> S'inscrire
+                                <i class="fas fa-check" aria-hidden="true"></i> S'inscrire (gratuit)
                             <?php else: ?>
-                                <i class="fas fa-hourglass-half"></i> Rejoindre la liste d'attente
+                                <i class="fas fa-hourglass-half" aria-hidden="true"></i> Rejoindre la liste d'attente
                             <?php endif; ?>
                         </a>
                     <?php endif; ?>
                 </div>
+
+                <?php if (isLoggedIn() && ($isRegistered || $_SESSION['user_id'] == $activite['organisateur_id'] || isAdmin())): ?>
+                    <div class="sidebar-card">
+                        <h3><i class="fas fa-comments" aria-hidden="true"></i> Chat de l'activité</h3>
+                        <p class="text-muted">Échangez avec l'organisateur et les autres participants.</p>
+                        <a href="index.php?page=chat-activite&id=<?= $activite['id'] ?>" class="btn btn-outline btn-block">
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i> Ouvrir le chat
+                        </a>
+                    </div>
+                <?php endif; ?>
 
                 <?php if (isLoggedIn() && ($_SESSION['user_id'] == $activite['organisateur_id'] || isAdmin())): ?>
                     <div class="sidebar-card">
