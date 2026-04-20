@@ -53,16 +53,24 @@ class ContactController {
     }
 
     public function cgu() {
-        $pageTitle = 'Conditions Générales d\'Utilisation';
+        $editorialModel = new EditorialContent();
+        $contenu = $editorialModel->getByKey('cgu');
+
+        $pageTitle = $contenu ? $contenu['titre'] : 'Conditions Générales d\'Utilisation';
+        $iconClass = 'fa-file-contract';
         include __DIR__ . '/../views/layout/header.php';
-        include __DIR__ . '/../views/pages/cgu.php';
+        include __DIR__ . '/../views/pages/editorial.php';
         include __DIR__ . '/../views/layout/footer.php';
     }
 
     public function mentionsLegales() {
-        $pageTitle = 'Mentions Légales';
+        $editorialModel = new EditorialContent();
+        $contenu = $editorialModel->getByKey('mentions-legales');
+
+        $pageTitle = $contenu ? $contenu['titre'] : 'Mentions Légales';
+        $iconClass = 'fa-gavel';
         include __DIR__ . '/../views/layout/header.php';
-        include __DIR__ . '/../views/pages/mentions-legales.php';
+        include __DIR__ . '/../views/pages/editorial.php';
         include __DIR__ . '/../views/layout/footer.php';
     }
 }
