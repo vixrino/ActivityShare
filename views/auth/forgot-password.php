@@ -8,15 +8,15 @@
                 </div>
 
                 <?php if ($success): ?>
-                    <div class="alert alert-success" role="status">
-                        <i class="fas fa-check-circle" aria-hidden="true"></i>
-                        Si un compte existe avec cette adresse e-mail, un lien de réinitialisation vous a été envoyé.
-                    </div>
-
-                    <?php if (!empty($demoLink)): ?>
+                    <?php if (empty($demoLink)): ?>
+                        <div class="alert alert-success" role="status">
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            Si un compte existe avec cette adresse e-mail, un lien de réinitialisation vient de vous être envoyé. Pensez à vérifier vos courriers indésirables.
+                        </div>
+                    <?php else: ?>
                         <div class="alert alert-info" role="status">
                             <strong><i class="fas fa-flask" aria-hidden="true"></i> Mode démonstration</strong>
-                            <p>Aucun e-mail n'est envoyé pour la présentation. Voici directement votre lien de réinitialisation :</p>
+                            <p>L'envoi d'e-mail n'est pas configuré sur ce serveur. Voici directement votre lien de réinitialisation (valable 1h) :</p>
                             <a href="<?= sanitize($demoLink) ?>" class="btn btn-primary btn-sm">
                                 <i class="fas fa-key" aria-hidden="true"></i> Réinitialiser mon mot de passe
                             </a>

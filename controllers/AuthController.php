@@ -132,6 +132,7 @@ class AuthController {
         $errors = [];
         $success = false;
         $demoLink = null;
+        $mailSent = false;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = sanitize($_POST['email']);
@@ -151,19 +152,40 @@ class AuthController {
                     $baseUrl = rtrim($baseUrl, '/');
                     $resetLink = $baseUrl . '/index.php?page=reinitialiser-mot-de-passe&token=' . $token;
 
-                    @mail(
-                        $email,
-                        'ActivityShare - Réinitialisation de votre mot de passe',
-                        "Bonjour " . $user['prenom'] . ",\n\n" .
-                        "Vous avez demandé la réinitialisation de votre mot de passe.\n" .
-                        "Cliquez sur ce lien pour le réinitialiser (valable 1h) :\n" .
-                        $resetLink . "\n\n" .
-                        "Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.\n\n" .
-                        "L'équipe ActivityShare",
-                        "From: no-reply@activityshare.com\r\nContent-Type: text/plain; charset=UTF-8"
-                    );
+                    $config = mailConfig();
+                    if (!empty($config['MAIL_ENABLED'])) {
+                        $htmlBody = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#333;max-width:560px;margin:auto;">'
+                            . '<h2 style="color:#4caf50;">ActivityShare</h2>'
+                            . '<p>Bonjour <strong>' . sanitize($user['prenom']) . '</strong>,</p>'
+                            . '<p>Vous avez demandé la réinitialisation de votre mot de passe.</p>'
+                            . '<p>Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe (lien valable 1 heure) :</p>'
+                            . '<p style="text-align:center;margin:30px 0;">'
+                            .   '<a href="' . $resetLink . '" style="background:#4caf50;color:#fff;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;">Réinitialiser mon mot de passe</a>'
+                            . '</p>'
+                            . '<p style="font-size:13px;color:#666;">Ou copiez ce lien dans votre navigateur :<br>'
+                            . '<a href="' . $resetLink . '">' . $resetLink . '</a></p>'
+                            . '<hr style="border:none;border-top:1px solid #eee;margin:24px 0;">'
+                            . '<p style="font-size:12px;color:#999;">Si vous n\'êtes pas à l\'origine de cette demande, ignorez simplement cet e-mail.<br>'
+                            . 'L\'équipe ActivityShare</p>'
+                            . '</div>';
 
-                    $demoLink = $resetLink;
+                        $textBody = "Bonjour " . $user['prenom'] . ",\n\n"
+                            . "Vous avez demandé la réinitialisation de votre mot de passe.\n"
+                            . "Cliquez sur ce lien (valable 1h) :\n" . $resetLink . "\n\n"
+                            . "Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.\n\n"
+                            . "L'équipe ActivityShare";
+
+                        $mailSent = sendMail(
+                            $email,
+                            'ActivityShare - Réinitialisation de votre mot de passe',
+                            $htmlBody,
+                            $textBody
+                        );
+                    }
+
+                    if (!$mailSent) {
+                        $demoLink = $resetLink;
+                    }
                 }
 
                 $success = true;
