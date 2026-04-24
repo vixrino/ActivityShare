@@ -1,5 +1,8 @@
 <section class="section page-header-section">
     <div class="container">
+        <a href="index.php?page=forum-categorie&id=<?= intval($topic['categorie_id']) ?>" class="btn btn-outline btn-sm forum-back-btn">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour à <?= sanitize($topic['categorie_nom']) ?>
+        </a>
         <nav class="breadcrumb" aria-label="Fil d'Ariane">
             <a href="index.php?page=forum">Forum</a> <span aria-hidden="true">›</span>
             <a href="index.php?page=forum-categorie&id=<?= intval($topic['categorie_id']) ?>"><?= sanitize($topic['categorie_nom']) ?></a> <span aria-hidden="true">›</span>

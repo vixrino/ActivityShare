@@ -1,5 +1,8 @@
 <section class="section page-header-section">
     <div class="container">
+        <a href="index.php?page=forum" class="btn btn-outline btn-sm forum-back-btn">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour au forum
+        </a>
         <div class="page-header-row">
             <div>
                 <nav class="breadcrumb" aria-label="Fil d'Ariane">
