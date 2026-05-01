@@ -105,7 +105,7 @@ CREATE TABLE liste_attente (
 CREATE TABLE notification (
     id INT AUTO_INCREMENT PRIMARY KEY,
     utilisateur_id INT NOT NULL,
-    type ENUM('confirmation_inscription', 'rappel', 'annulation', 'place_disponible', 'paiement', 'message', 'forum') NOT NULL,
+    type ENUM('confirmation_inscription', 'rappel', 'annulation', 'place_disponible', 'paiement', 'message', 'forum', 'abonnement', 'notation') NOT NULL,
     titre VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     lue TINYINT(1) DEFAULT 0,
@@ -213,6 +213,89 @@ CREATE TABLE forum_message (
     FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE abonnement (
+    suiveur_id INT NOT NULL,
+    suivi_id INT NOT NULL,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (suiveur_id, suivi_id),
+    UNIQUE KEY uniq_abonnement (suiveur_id, suivi_id),
+    FOREIGN KEY (suiveur_id) REFERENCES utilisateur(id) ON DELETE CASCADE,
+    FOREIGN KEY (suivi_id) REFERENCES utilisateur(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE notation_activite (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    activite_id INT NOT NULL,
+    utilisateur_id INT NOT NULL,
+    note TINYINT UNSIGNED NOT NULL,
+    commentaire TEXT,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_note_activite (activite_id, utilisateur_id),
+    FOREIGN KEY (activite_id) REFERENCES activite(id) ON DELETE CASCADE,
+    FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE notation_organisateur (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    organisateur_id INT NOT NULL,
+    evaluateur_id INT NOT NULL,
+    activite_id INT NOT NULL,
+    note TINYINT UNSIGNED NOT NULL,
+    commentaire TEXT,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_note_organisateur (organisateur_id, evaluateur_id, activite_id),
+    FOREIGN KEY (organisateur_id) REFERENCES utilisateur(id) ON DELETE CASCADE,
+    FOREIGN KEY (evaluateur_id) REFERENCES utilisateur(id) ON DELETE CASCADE,
+    FOREIGN KEY (activite_id) REFERENCES activite(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE tag (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(50) NOT NULL UNIQUE,
+    slug VARCHAR(60) NOT NULL UNIQUE,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE activite_tag (
+    activite_id INT NOT NULL,
+    tag_id INT NOT NULL,
+    PRIMARY KEY (activite_id, tag_id),
+    FOREIGN KEY (activite_id) REFERENCES activite(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tag(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE activite_vue (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    activite_id INT NOT NULL,
+    utilisateur_id INT DEFAULT NULL,
+    ip VARCHAR(45) DEFAULT NULL,
+    date_vue DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (activite_id) REFERENCES activite(id) ON DELETE CASCADE,
+    FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id) ON DELETE SET NULL,
+    INDEX idx_activite_date (activite_id, date_vue)
+) ENGINE=InnoDB;
+
+CREATE TABLE login_attempt (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) DEFAULT NULL,
+    ip VARCHAR(45) NOT NULL,
+    succes TINYINT(1) DEFAULT 0,
+    date_tentative DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_ip_date (ip, date_tentative),
+    INDEX idx_email_date (email, date_tentative)
+) ENGINE=InnoDB;
+
+CREATE TABLE security_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    utilisateur_id INT DEFAULT NULL,
+    ip VARCHAR(45) DEFAULT NULL,
+    action VARCHAR(80) NOT NULL,
+    details TEXT DEFAULT NULL,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id) ON DELETE SET NULL,
+    INDEX idx_action_date (action, date_creation)
+) ENGINE=InnoDB;
+
 -- ============================================
 -- Données initiales
 -- ============================================
@@ -258,3 +341,15 @@ INSERT INTO forum_categorie (nom, description, icone, ordre) VALUES
 ('Discussions générales', 'Tout ce qui concerne ActivityShare et ses activités', 'fa-comments', 2),
 ('Bons plans', 'Partagez vos bons plans et idées d\'activités', 'fa-lightbulb', 3),
 ('Entraide', 'Posez vos questions à la communauté', 'fa-life-ring', 4);
+
+INSERT INTO tag (nom, slug) VALUES
+('Sport', 'sport'),
+('Culture', 'culture'),
+('Détente', 'detente'),
+('Famille', 'famille'),
+('Apéro', 'apero'),
+('Plein air', 'plein-air'),
+('Soirée', 'soiree'),
+('Gratuit', 'gratuit'),
+('Débutant', 'debutant'),
+('Expert', 'expert');
