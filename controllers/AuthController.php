@@ -7,12 +7,20 @@ class AuthController {
         }
 
         $errors = [];
+        $ip = clientIp();
+        $attempts = new LoginAttempt();
+        $attempts->purgeOld();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = sanitize($_POST['email']);
-            $password = $_POST['mot_de_passe'];
+            csrfVerify();
+            $email = inputString($_POST, 'email', 255);
+            $password = isset($_POST['mot_de_passe']) ? (string)$_POST['mot_de_passe'] : '';
 
-            if (empty($email) || empty($password)) {
+            // Protection brute force : on bloque AVANT toute vérification
+            if ($attempts->isBlocked($email, $ip)) {
+                logSecurity('login_blocked', 'IP ' . $ip . ' email ' . $email);
+                $errors[] = 'Trop de tentatives échouées. Réessayez dans 15 minutes.';
+            } elseif (empty($email) || empty($password)) {
                 $errors[] = 'Veuillez remplir tous les champs.';
             } else {
                 $userModel = new User();
@@ -21,13 +29,19 @@ class AuthController {
                 if ($user) {
                     if (!$user['actif']) {
                         $errors[] = 'Votre compte a été désactivé. Contactez un administrateur.';
+                        $attempts->record($email, $ip, false);
+                        logSecurity('login_disabled', 'user_id=' . $user['id']);
                     } else {
+                        $attempts->record($email, $ip, true);
+                        $attempts->clearFor($email, $ip);
+                        session_regenerate_id(true);
                         $_SESSION['user_id'] = $user['id'];
                         $_SESSION['user_nom'] = $user['nom'];
                         $_SESSION['user_prenom'] = $user['prenom'];
                         $_SESSION['user_email'] = $user['email'];
                         $_SESSION['user_role'] = $user['role'];
                         $_SESSION['user_photo'] = $user['photo_profil'];
+                        logSecurity('login_success', 'user_id=' . $user['id']);
 
                         $_SESSION['flash'] = ['type' => 'success', 'message' => 'Bienvenue, ' . $user['prenom'] . ' !'];
 
@@ -38,7 +52,15 @@ class AuthController {
                         }
                     }
                 } else {
+                    $attempts->record($email, $ip, false);
+                    logSecurity('login_failed', 'email=' . $email);
                     $errors[] = 'Email ou mot de passe incorrect.';
+
+                    // Affiche un avertissement quand l'utilisateur s'approche du blocage
+                    $left = LoginAttempt::MAX_ATTEMPTS_EMAIL - $attempts->countRecentFailuresByEmail($email);
+                    if ($left > 0 && $left <= 2) {
+                        $errors[] = 'Il vous reste ' . $left . ' tentative(s) avant blocage temporaire.';
+                    }
                 }
             }
         }
@@ -57,6 +79,7 @@ class AuthController {
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $nom = sanitize($_POST['nom']);
             $prenom = sanitize($_POST['prenom']);
             $email = sanitize($_POST['email']);
@@ -122,8 +145,15 @@ class AuthController {
     }
 
     public function logout() {
+        $uid = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+        logSecurity('logout', 'user_id=' . $uid);
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $p = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+        }
         session_destroy();
-        session_start();
+        secureSessionStart();
         $_SESSION['flash'] = ['type' => 'success', 'message' => 'Vous avez été déconnecté.'];
         redirect('home');
     }
@@ -135,6 +165,7 @@ class AuthController {
         $mailSent = false;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $email = sanitize($_POST['email']);
 
             if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -216,6 +247,7 @@ class AuthController {
         }
 
         if (empty($errors) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $mdp = $_POST['mot_de_passe'] ?? '';
             $confirm = $_POST['confirmer_mot_de_passe'] ?? '';
 
@@ -230,6 +262,7 @@ class AuthController {
                 $userModel = new User();
                 $userModel->updatePassword($reset['utilisateur_id'], $mdp);
                 $resetModel->markUsed($token);
+                logSecurity('password_reset', 'user_id=' . $reset['utilisateur_id']);
 
                 $_SESSION['flash'] = ['type' => 'success', 'message' => 'Mot de passe réinitialisé. Vous pouvez vous connecter.'];
                 redirect('connexion');
