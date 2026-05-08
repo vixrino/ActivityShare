@@ -19,6 +19,7 @@
 
                 <?php if (!empty($reset) && empty($errors)): ?>
                     <form method="POST" action="index.php?page=reinitialiser-mot-de-passe">
+                        <?= csrfField() ?>
                         <input type="hidden" name="token" value="<?= sanitize($token) ?>">
 
                         <div class="form-group">

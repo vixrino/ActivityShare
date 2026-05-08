@@ -18,6 +18,7 @@
             <?php endif; ?>
 
             <form method="POST" action="index.php?page=forum-nouveau-sujet">
+                <?= csrfField() ?>
                 <div class="form-group">
                     <label for="categorie">Catégorie *</label>
                     <select id="categorie" name="forum_categorie_id" class="form-control" required>

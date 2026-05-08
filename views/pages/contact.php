@@ -27,6 +27,7 @@
                 <?php endif; ?>
 
                 <form method="POST" action="index.php?page=contact">
+                    <?= csrfField() ?>
                     <div class="form-row-2">
                         <div class="form-group">
                             <label for="nom">Nom *</label>

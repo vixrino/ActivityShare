@@ -18,6 +18,7 @@
             <?php endif; ?>
 
             <form method="POST" action="index.php?page=modifier-profil" enctype="multipart/form-data">
+                <?= csrfField() ?>
                 <div class="form-section">
                     <h2>Informations personnelles</h2>
 

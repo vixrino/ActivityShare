@@ -36,6 +36,7 @@
                 </div>
 
                 <form method="POST" action="index.php?page=chat-activite&id=<?= intval($activite['id']) ?>" class="thread-form">
+                <?= csrfField() ?>
                     <label for="chat-input" class="sr-only">Votre message dans le chat</label>
                     <textarea id="chat-input" name="contenu" rows="2" maxlength="2000"
                               placeholder="Partagez une info ou posez une question…" class="form-control" required></textarea>

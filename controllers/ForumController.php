@@ -38,6 +38,7 @@ class ForumController {
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn()) {
+            csrfVerify();
             if ($topic['ferme']) {
                 $_SESSION['flash'] = ['type' => 'warning', 'message' => 'Ce sujet est fermé.'];
             } else {
@@ -67,6 +68,7 @@ class ForumController {
         $categorieId = isset($_GET['categorie']) ? intval($_GET['categorie']) : 0;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $categorieId = intval($_POST['forum_categorie_id']);
             $titre = sanitize($_POST['titre']);
             $contenu = trim($_POST['contenu']);

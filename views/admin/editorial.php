@@ -12,6 +12,7 @@
         <?php foreach ($contenus as $c): ?>
             <div class="editorial-edit-card">
                 <form method="POST" action="index.php?page=admin-editorial">
+                    <?= csrfField() ?>
                     <input type="hidden" name="cle" value="<?= sanitize($c['cle']) ?>">
 
                     <div class="editorial-head">
