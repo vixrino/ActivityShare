@@ -35,15 +35,17 @@
 
             <section class="messaging-thread" aria-label="Conversation">
                 <header class="thread-header">
-                    <div class="thread-avatar">
+                    <a href="index.php?page=utilisateur&id=<?= intval($autre['id']) ?>" class="thread-avatar user-link">
                         <?php if ($autre['photo_profil']): ?>
                             <img src="<?= sanitize($autre['photo_profil']) ?>" alt="">
                         <?php else: ?>
                             <span class="avatar-placeholder"><?= strtoupper(substr($autre['prenom'], 0, 1) . substr($autre['nom'], 0, 1)) ?></span>
                         <?php endif; ?>
-                    </div>
+                    </a>
                     <div>
-                        <h2><?= sanitize($autre['prenom'] . ' ' . $autre['nom']) ?></h2>
+                        <a href="index.php?page=utilisateur&id=<?= intval($autre['id']) ?>" class="user-link">
+                            <h2><?= sanitize($autre['prenom'] . ' ' . $autre['nom']) ?></h2>
+                        </a>
                         <p class="text-muted"><?= sanitize(ucfirst($autre['role'])) ?></p>
                     </div>
                 </header>
@@ -62,6 +64,7 @@
                 </div>
 
                 <form method="POST" action="index.php?page=conversation&user=<?= intval($autre['id']) ?>" class="thread-form">
+                    <?= csrfField() ?>
                     <label for="message-input" class="sr-only">Votre message</label>
                     <textarea id="message-input" name="contenu" rows="2" maxlength="2000"
                               placeholder="Écrivez votre message…" class="form-control" required></textarea>
