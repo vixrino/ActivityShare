@@ -131,6 +131,7 @@ class AuthController {
     public function forgotPassword() {
         $errors = [];
         $success = false;
+        $demoLink = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = sanitize($_POST['email']);
@@ -138,6 +139,33 @@ class AuthController {
             if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $errors[] = 'Veuillez entrer une adresse e-mail valide.';
             } else {
+                $userModel = new User();
+                $user = $userModel->findByEmail($email);
+
+                if ($user) {
+                    $resetModel = new PasswordReset();
+                    $token = $resetModel->create($user['id'], $email);
+
+                    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
+                    $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
+                    $baseUrl = rtrim($baseUrl, '/');
+                    $resetLink = $baseUrl . '/index.php?page=reinitialiser-mot-de-passe&token=' . $token;
+
+                    @mail(
+                        $email,
+                        'ActivityShare - Réinitialisation de votre mot de passe',
+                        "Bonjour " . $user['prenom'] . ",\n\n" .
+                        "Vous avez demandé la réinitialisation de votre mot de passe.\n" .
+                        "Cliquez sur ce lien pour le réinitialiser (valable 1h) :\n" .
+                        $resetLink . "\n\n" .
+                        "Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.\n\n" .
+                        "L'équipe ActivityShare",
+                        "From: no-reply@activityshare.com\r\nContent-Type: text/plain; charset=UTF-8"
+                    );
+
+                    $demoLink = $resetLink;
+                }
+
                 $success = true;
             }
         }
@@ -145,6 +173,50 @@ class AuthController {
         $pageTitle = 'Mot de passe oublié';
         include __DIR__ . '/../views/layout/header.php';
         include __DIR__ . '/../views/auth/forgot-password.php';
+        include __DIR__ . '/../views/layout/footer.php';
+    }
+
+    public function resetPassword() {
+        $errors = [];
+        $success = false;
+        $token = $_GET['token'] ?? $_POST['token'] ?? '';
+
+        if (empty($token)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Lien de réinitialisation invalide.'];
+            redirect('connexion');
+        }
+
+        $resetModel = new PasswordReset();
+        $reset = $resetModel->findValid($token);
+
+        if (!$reset) {
+            $errors[] = 'Ce lien est invalide ou a expiré.';
+        }
+
+        if (empty($errors) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $mdp = $_POST['mot_de_passe'] ?? '';
+            $confirm = $_POST['confirmer_mot_de_passe'] ?? '';
+
+            if (strlen($mdp) < 8) {
+                $errors[] = 'Le mot de passe doit contenir au moins 8 caractères.';
+            }
+            if ($mdp !== $confirm) {
+                $errors[] = 'Les mots de passe ne correspondent pas.';
+            }
+
+            if (empty($errors)) {
+                $userModel = new User();
+                $userModel->updatePassword($reset['utilisateur_id'], $mdp);
+                $resetModel->markUsed($token);
+
+                $_SESSION['flash'] = ['type' => 'success', 'message' => 'Mot de passe réinitialisé. Vous pouvez vous connecter.'];
+                redirect('connexion');
+            }
+        }
+
+        $pageTitle = 'Nouveau mot de passe';
+        include __DIR__ . '/../views/layout/header.php';
+        include __DIR__ . '/../views/auth/reset-password.php';
         include __DIR__ . '/../views/layout/footer.php';
     }
 }

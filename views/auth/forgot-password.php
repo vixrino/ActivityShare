@@ -8,14 +8,25 @@
                 </div>
 
                 <?php if ($success): ?>
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle"></i>
+                    <div class="alert alert-success" role="status">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
                         Si un compte existe avec cette adresse e-mail, un lien de réinitialisation vous a été envoyé.
                     </div>
+
+                    <?php if (!empty($demoLink)): ?>
+                        <div class="alert alert-info" role="status">
+                            <strong><i class="fas fa-flask" aria-hidden="true"></i> Mode démonstration</strong>
+                            <p>Aucun e-mail n'est envoyé pour la présentation. Voici directement votre lien de réinitialisation :</p>
+                            <a href="<?= sanitize($demoLink) ?>" class="btn btn-primary btn-sm">
+                                <i class="fas fa-key" aria-hidden="true"></i> Réinitialiser mon mot de passe
+                            </a>
+                            <p class="form-help" style="margin-top:10px;">Ou copiez ce lien : <code style="word-break:break-all;"><?= sanitize($demoLink) ?></code></p>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
 
                 <?php if (!empty($errors)): ?>
-                    <div class="alert alert-danger">
+                    <div class="alert alert-danger" role="alert">
                         <ul>
                             <?php foreach ($errors as $error): ?>
                                 <li><?= sanitize($error) ?></li>
@@ -26,18 +37,18 @@
 
                 <form method="POST" action="index.php?page=mot-de-passe-oublie">
                     <div class="form-group">
-                        <label for="email"><i class="fas fa-envelope"></i> Adresse e-mail</label>
+                        <label for="email"><i class="fas fa-envelope" aria-hidden="true"></i> Adresse e-mail</label>
                         <input type="email" id="email" name="email" class="form-control"
-                               required placeholder="votre@email.com">
+                               required placeholder="votre@email.com" autocomplete="email">
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-block">
-                        <i class="fas fa-paper-plane"></i> Envoyer le lien
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Envoyer le lien
                     </button>
                 </form>
 
                 <div class="auth-footer">
-                    <p><a href="index.php?page=connexion"><i class="fas fa-arrow-left"></i> Retour à la connexion</a></p>
+                    <p><a href="index.php?page=connexion"><i class="fas fa-arrow-left" aria-hidden="true"></i> Retour à la connexion</a></p>
                 </div>
             </div>
         </div>
