@@ -12,6 +12,13 @@ require_once __DIR__ . '/models/WaitingList.php';
 require_once __DIR__ . '/models/Notification.php';
 require_once __DIR__ . '/models/Faq.php';
 require_once __DIR__ . '/models/ContactMessage.php';
+require_once __DIR__ . '/models/Cart.php';
+require_once __DIR__ . '/models/Payment.php';
+require_once __DIR__ . '/models/PasswordReset.php';
+require_once __DIR__ . '/models/EditorialContent.php';
+require_once __DIR__ . '/models/PrivateMessage.php';
+require_once __DIR__ . '/models/ActivityChat.php';
+require_once __DIR__ . '/models/Forum.php';
 
 require_once __DIR__ . '/controllers/HomeController.php';
 require_once __DIR__ . '/controllers/AuthController.php';
@@ -19,124 +26,82 @@ require_once __DIR__ . '/controllers/ActivityController.php';
 require_once __DIR__ . '/controllers/ProfileController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/ContactController.php';
+require_once __DIR__ . '/controllers/CartController.php';
+require_once __DIR__ . '/controllers/CheckoutController.php';
+require_once __DIR__ . '/controllers/MessagingController.php';
+require_once __DIR__ . '/controllers/ChatController.php';
+require_once __DIR__ . '/controllers/ForumController.php';
 
-$page = 'home';
-if (isset($_GET['page'])) {
-    $page = $_GET['page'];
-}
+$page = isset($_GET['page']) ? $_GET['page'] : 'home';
 
-if ($page === 'home') {
-    $controller = new HomeController();
-    $controller->index();
+$routes = [
+    'home' => ['HomeController', 'index'],
 
-} else if ($page === 'activites') {
-    $controller = new ActivityController();
-    $controller->index();
+    'activites' => ['ActivityController', 'index'],
+    'activite' => ['ActivityController', 'show'],
+    'creer-activite' => ['ActivityController', 'create'],
+    'modifier-activite' => ['ActivityController', 'edit'],
+    'supprimer-activite' => ['ActivityController', 'delete'],
+    'inscription-activite' => ['ActivityController', 'register'],
+    'desinscription-activite' => ['ActivityController', 'unregister'],
+    'recherche' => ['ActivityController', 'search'],
 
-} else if ($page === 'activite') {
-    $controller = new ActivityController();
-    $controller->show();
+    'connexion' => ['AuthController', 'login'],
+    'inscription' => ['AuthController', 'register'],
+    'deconnexion' => ['AuthController', 'logout'],
+    'mot-de-passe-oublie' => ['AuthController', 'forgotPassword'],
+    'reinitialiser-mot-de-passe' => ['AuthController', 'resetPassword'],
 
-} else if ($page === 'creer-activite') {
-    $controller = new ActivityController();
-    $controller->create();
+    'profil' => ['ProfileController', 'show'],
+    'modifier-profil' => ['ProfileController', 'edit'],
+    'mes-activites' => ['ProfileController', 'myActivities'],
+    'mes-inscriptions' => ['ProfileController', 'myRegistrations'],
 
-} else if ($page === 'modifier-activite') {
-    $controller = new ActivityController();
-    $controller->edit();
+    'panier' => ['CartController', 'index'],
+    'panier-ajouter' => ['CartController', 'add'],
+    'panier-retirer' => ['CartController', 'remove'],
+    'panier-modifier' => ['CartController', 'update'],
+    'paiement' => ['CheckoutController', 'index'],
+    'confirmation-paiement' => ['CheckoutController', 'confirmation'],
+    'mes-paiements' => ['CheckoutController', 'history'],
+    'recu-paiement' => ['CheckoutController', 'receipt'],
 
-} else if ($page === 'supprimer-activite') {
-    $controller = new ActivityController();
-    $controller->delete();
+    'messagerie' => ['MessagingController', 'index'],
+    'conversation' => ['MessagingController', 'conversation'],
+    'nouveau-message' => ['MessagingController', 'newConversation'],
 
-} else if ($page === 'inscription-activite') {
-    $controller = new ActivityController();
-    $controller->register();
+    'chat-activite' => ['ChatController', 'activityChat'],
 
-} else if ($page === 'desinscription-activite') {
-    $controller = new ActivityController();
-    $controller->unregister();
+    'forum' => ['ForumController', 'index'],
+    'forum-categorie' => ['ForumController', 'category'],
+    'forum-topic' => ['ForumController', 'topic'],
+    'forum-nouveau-sujet' => ['ForumController', 'createTopic'],
+    'forum-supprimer-sujet' => ['ForumController', 'deleteTopic'],
+    'forum-epingler-sujet' => ['ForumController', 'togglePin'],
 
-} else if ($page === 'recherche') {
-    $controller = new ActivityController();
-    $controller->search();
+    'admin' => ['AdminController', 'dashboard'],
+    'admin-utilisateurs' => ['AdminController', 'users'],
+    'admin-activites' => ['AdminController', 'activities'],
+    'admin-faq' => ['AdminController', 'faq'],
+    'admin-messages' => ['AdminController', 'messages'],
+    'admin-toggle-user' => ['AdminController', 'toggleUser'],
+    'admin-supprimer-user' => ['AdminController', 'deleteUser'],
+    'admin-delete-activity' => ['AdminController', 'deleteActivity'],
+    'admin-editorial' => ['AdminController', 'editorial'],
+    'admin-mailbox' => ['AdminController', 'mailbox'],
+    'admin-paiements' => ['AdminController', 'payments'],
 
-} else if ($page === 'connexion') {
-    $controller = new AuthController();
-    $controller->login();
+    'faq' => ['ContactController', 'faq'],
+    'cgu' => ['ContactController', 'cgu'],
+    'mentions-legales' => ['ContactController', 'mentionsLegales'],
+    'contact' => ['ContactController', 'contact'],
+];
 
-} else if ($page === 'inscription') {
-    $controller = new AuthController();
-    $controller->register();
-
-} else if ($page === 'deconnexion') {
-    $controller = new AuthController();
-    $controller->logout();
-
-} else if ($page === 'mot-de-passe-oublie') {
-    $controller = new AuthController();
-    $controller->forgotPassword();
-
-} else if ($page === 'profil') {
-    $controller = new ProfileController();
-    $controller->show();
-
-} else if ($page === 'modifier-profil') {
-    $controller = new ProfileController();
-    $controller->edit();
-
-} else if ($page === 'mes-activites') {
-    $controller = new ProfileController();
-    $controller->myActivities();
-
-} else if ($page === 'mes-inscriptions') {
-    $controller = new ProfileController();
-    $controller->myRegistrations();
-
-} else if ($page === 'admin') {
-    $controller = new AdminController();
-    $controller->dashboard();
-
-} else if ($page === 'admin-utilisateurs') {
-    $controller = new AdminController();
-    $controller->users();
-
-} else if ($page === 'admin-activites') {
-    $controller = new AdminController();
-    $controller->activities();
-
-} else if ($page === 'admin-faq') {
-    $controller = new AdminController();
-    $controller->faq();
-
-} else if ($page === 'admin-messages') {
-    $controller = new AdminController();
-    $controller->messages();
-
-} else if ($page === 'admin-toggle-user') {
-    $controller = new AdminController();
-    $controller->toggleUser();
-
-} else if ($page === 'admin-delete-activity') {
-    $controller = new AdminController();
-    $controller->deleteActivity();
-
-} else if ($page === 'faq') {
-    $controller = new ContactController();
-    $controller->faq();
-
-} else if ($page === 'cgu') {
-    $controller = new ContactController();
-    $controller->cgu();
-
-} else if ($page === 'mentions-legales') {
-    $controller = new ContactController();
-    $controller->mentionsLegales();
-
-} else if ($page === 'contact') {
-    $controller = new ContactController();
-    $controller->contact();
-
+if (isset($routes[$page])) {
+    $controllerName = $routes[$page][0];
+    $actionName = $routes[$page][1];
+    $controller = new $controllerName();
+    $controller->$actionName();
 } else {
     http_response_code(404);
     include __DIR__ . '/views/pages/404.php';
