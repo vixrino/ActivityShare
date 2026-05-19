@@ -1,18 +1,12 @@
 <section class="section page-header-section">
     <div class="container">
-        <h1><i class="fas fa-users"></i> Gestion des utilisateurs</h1>
+        <h1><i class="fas fa-users" aria-hidden="true"></i> Gestion des utilisateurs</h1>
     </div>
 </section>
 
 <section class="section">
     <div class="container">
-        <div class="admin-nav">
-            <a href="index.php?page=admin" class="admin-nav-link"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a>
-            <a href="index.php?page=admin-utilisateurs" class="admin-nav-link active"><i class="fas fa-users"></i> Utilisateurs</a>
-            <a href="index.php?page=admin-activites" class="admin-nav-link"><i class="fas fa-calendar"></i> Activités</a>
-            <a href="index.php?page=admin-faq" class="admin-nav-link"><i class="fas fa-question-circle"></i> FAQ</a>
-            <a href="index.php?page=admin-messages" class="admin-nav-link"><i class="fas fa-envelope"></i> Messages</a>
-        </div>
+        <?php include __DIR__ . '/../layout/admin-nav.php'; ?>
 
         <div class="table-responsive">
             <table class="table">
@@ -42,12 +36,20 @@
                                     <?= $u['actif'] ? 'Actif' : 'Inactif' ?>
                                 </span>
                             </td>
-                            <td>
+                            <td class="table-actions">
                                 <?php if ($u['id'] != $_SESSION['user_id']): ?>
                                     <a href="index.php?page=admin-toggle-user&id=<?= $u['id'] ?>"
-                                       class="btn btn-sm <?= $u['actif'] ? 'btn-danger' : 'btn-primary' ?>"
+                                       class="btn btn-sm <?= $u['actif'] ? 'btn-outline' : 'btn-primary' ?>"
+                                       aria-label="<?= $u['actif'] ? 'Désactiver' : 'Activer' ?> <?= sanitize($u['prenom']) ?>"
                                        onclick="return confirm('<?= $u['actif'] ? 'Désactiver' : 'Activer' ?> cet utilisateur ?')">
+                                        <i class="fas <?= $u['actif'] ? 'fa-user-slash' : 'fa-user-check' ?>" aria-hidden="true"></i>
                                         <?= $u['actif'] ? 'Désactiver' : 'Activer' ?>
+                                    </a>
+                                    <a href="index.php?page=admin-supprimer-user&id=<?= $u['id'] ?>"
+                                       class="btn btn-sm btn-danger"
+                                       aria-label="Supprimer <?= sanitize($u['prenom']) ?>"
+                                       onclick="return confirm('Supprimer définitivement cet utilisateur et toutes ses données ?\n\nCette action est irréversible.')">
+                                        <i class="fas fa-trash" aria-hidden="true"></i> Supprimer
                                     </a>
                                 <?php else: ?>
                                     <span class="text-muted">Vous</span>

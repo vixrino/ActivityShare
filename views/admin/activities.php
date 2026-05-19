@@ -6,13 +6,7 @@
 
 <section class="section">
     <div class="container">
-        <div class="admin-nav">
-            <a href="index.php?page=admin" class="admin-nav-link"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a>
-            <a href="index.php?page=admin-utilisateurs" class="admin-nav-link"><i class="fas fa-users"></i> Utilisateurs</a>
-            <a href="index.php?page=admin-activites" class="admin-nav-link active"><i class="fas fa-calendar"></i> Activités</a>
-            <a href="index.php?page=admin-faq" class="admin-nav-link"><i class="fas fa-question-circle"></i> FAQ</a>
-            <a href="index.php?page=admin-messages" class="admin-nav-link"><i class="fas fa-envelope"></i> Messages</a>
-        </div>
+        <?php include __DIR__ . '/../layout/admin-nav.php'; ?>
 
         <div class="table-responsive">
             <table class="table">

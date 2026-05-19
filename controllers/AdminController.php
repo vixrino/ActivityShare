@@ -129,6 +129,75 @@ class AdminController {
         redirect('admin-utilisateurs');
     }
 
+    public function deleteUser() {
+        requireAdmin();
+
+        $id = 0;
+        if (isset($_GET['id'])) {
+            $id = intval($_GET['id']);
+        }
+
+        if ($id > 0 && $id != $_SESSION['user_id']) {
+            $userModel = new User();
+            $userModel->delete($id);
+            $_SESSION['flash'] = ['type' => 'success', 'message' => 'Utilisateur supprimé définitivement.'];
+        } else {
+            $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Action impossible.'];
+        }
+
+        redirect('admin-utilisateurs');
+    }
+
+    public function editorial() {
+        requireAdmin();
+
+        $editorialModel = new EditorialContent();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $cle = sanitize($_POST['cle']);
+            $titre = sanitize($_POST['titre']);
+            $contenu = richSanitize($_POST['contenu']);
+            $editorialModel->update($cle, $titre, $contenu);
+            $_SESSION['flash'] = ['type' => 'success', 'message' => 'Contenu mis à jour.'];
+            redirect('admin-editorial');
+        }
+
+        $contenus = $editorialModel->getAll();
+
+        $pageTitle = 'Gestion des pages légales';
+        include __DIR__ . '/../views/layout/header.php';
+        include __DIR__ . '/../views/admin/editorial.php';
+        include __DIR__ . '/../views/layout/footer.php';
+    }
+
+    public function mailbox() {
+        requireAdmin();
+
+        $resetModel = new PasswordReset();
+        $resets = $resetModel->getRecent(30);
+
+        $pageTitle = 'Boîte mail (démo)';
+        include __DIR__ . '/../views/layout/header.php';
+        include __DIR__ . '/../views/admin/mailbox.php';
+        include __DIR__ . '/../views/layout/footer.php';
+    }
+
+    public function payments() {
+        requireAdmin();
+
+        $sql = "SELECT p.*, u.nom, u.prenom, u.email
+                FROM paiement p
+                JOIN utilisateur u ON p.utilisateur_id = u.id
+                ORDER BY p.date_paiement DESC";
+        $db = Database::getInstance()->getConnection();
+        $paiements = $db->query($sql)->fetchAll();
+
+        $pageTitle = 'Paiements';
+        include __DIR__ . '/../views/layout/header.php';
+        include __DIR__ . '/../views/admin/payments.php';
+        include __DIR__ . '/../views/layout/footer.php';
+    }
+
     public function deleteActivity() {
         requireAdmin();
 
