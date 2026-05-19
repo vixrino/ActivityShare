@@ -58,9 +58,26 @@ function requireAdmin() {
 }
 
 function sanitize($data) {
-    $data = trim($data);
-    $data = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
-    return $data;
+    if (is_array($data)) {
+        return array_map('sanitize', $data);
+    }
+    $data = trim((string)$data);
+    return htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Récupère et nettoie une valeur GET/POST (string), supprime les caractères
+ * de contrôle et limite la taille. Pour usage en stockage interne avant
+ * affichage (l'échappement HTML se fait au moment du rendu via sanitize()).
+ */
+function inputString($source, $key, $maxLen = 1000) {
+    $value = isset($source[$key]) ? (string)$source[$key] : '';
+    $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $value);
+    $value = trim($value);
+    if (mb_strlen($value) > $maxLen) {
+        $value = mb_substr($value, 0, $maxLen);
+    }
+    return $value;
 }
 
 function flash() {
@@ -111,31 +128,13 @@ function timeAgo($datetime) {
     return "à l'instant";
 }
 
+/**
+ * Upload image : délègue à secureImageUpload() qui vérifie le MIME réel
+ * via finfo, la taille, l'extension whitelisted et utilise un nom de fichier
+ * aléatoire. Cf. helpers/security.php.
+ */
 function uploadImage($file, $directory) {
-    $typesAutorises = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    $tailleMax = 5 * 1024 * 1024;
-
-    if ($file['error'] !== UPLOAD_ERR_OK) {
-        return null;
-    }
-
-    if (!in_array($file['type'], $typesAutorises)) {
-        return null;
-    }
-
-    if ($file['size'] > $tailleMax) {
-        return null;
-    }
-
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $nomFichier = uniqid() . '_' . time() . '.' . $extension;
-    $cheminUpload = __DIR__ . '/../uploads/' . $directory . '/' . $nomFichier;
-
-    if (move_uploaded_file($file['tmp_name'], $cheminUpload)) {
-        return 'uploads/' . $directory . '/' . $nomFichier;
-    }
-
-    return null;
+    return secureImageUpload($file, $directory);
 }
 
 function formatPrice($prix) {
@@ -216,6 +215,36 @@ function sendMail($to, $subject, $body, $altBody = '') {
         error_log('[ActivityShare] Echec envoi mail : ' . $mail->ErrorInfo);
         return false;
     }
+}
+
+// Rendu d'une note sous forme d'étoiles (5 max).
+// $note est un float (ex: 4.3), $total est le nombre d'avis.
+function renderStars($note, $total = null) {
+    $note = floatval($note);
+    $pleines = (int)floor($note);
+    $demi = ($note - $pleines) >= 0.5;
+    $vides = 5 - $pleines - ($demi ? 1 : 0);
+
+    $html = '<span class="stars" aria-label="Note ' . number_format($note, 1, ',', '') . ' sur 5">';
+    for ($i = 0; $i < $pleines; $i++) {
+        $html .= '<i class="fas fa-star" aria-hidden="true"></i>';
+    }
+    if ($demi) {
+        $html .= '<i class="fas fa-star-half-alt" aria-hidden="true"></i>';
+    }
+    for ($i = 0; $i < $vides; $i++) {
+        $html .= '<i class="far fa-star" aria-hidden="true"></i>';
+    }
+    $html .= '</span>';
+
+    if ($total !== null) {
+        if ($total > 0) {
+            $html .= ' <span class="stars-meta">' . number_format($note, 1, ',', '') . ' / 5 (' . intval($total) . ' avis)</span>';
+        } else {
+            $html .= ' <span class="stars-meta">Aucun avis</span>';
+        }
+    }
+    return $html;
 }
 
 function getPlacesRestantes($activiteId) {
