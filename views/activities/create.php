@@ -133,16 +133,25 @@
                 <div class="form-section">
                     <h2>Participants et conditions</h2>
 
-                    <div class="form-group">
-                        <label for="nb_max_participants">Nombre maximum de participants *</label>
-                        <?php
-                        $nbMaxValeur = '';
-                        if (isset($_POST['nb_max_participants'])) {
-                            $nbMaxValeur = sanitize($_POST['nb_max_participants']);
-                        }
-                        ?>
-                        <input type="number" id="nb_max_participants" name="nb_max_participants" class="form-control"
-                               value="<?= $nbMaxValeur ?>" required min="1" placeholder="Ex: 20">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="nb_max_participants">Nombre maximum de participants *</label>
+                            <?php
+                            $nbMaxValeur = '';
+                            if (isset($_POST['nb_max_participants'])) {
+                                $nbMaxValeur = sanitize($_POST['nb_max_participants']);
+                            }
+                            ?>
+                            <input type="number" id="nb_max_participants" name="nb_max_participants" class="form-control"
+                                   value="<?= $nbMaxValeur ?>" required min="1" placeholder="Ex: 20">
+                        </div>
+                        <div class="form-group">
+                            <label for="prix">Prix par participant (€)</label>
+                            <input type="number" id="prix" name="prix" class="form-control"
+                                   value="<?= sanitize($_POST['prix'] ?? '0') ?>"
+                                   min="0" step="0.01" placeholder="0,00">
+                            <small class="form-help">Laissez à 0 pour une activité gratuite.</small>
+                        </div>
                     </div>
 
                     <div class="form-group">

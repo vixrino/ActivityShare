@@ -103,6 +103,8 @@ class ActivityController {
             $nb_max = intval($_POST['nb_max_participants']);
             $type = sanitize($_POST['type']);
             $conditions = sanitize($_POST['conditions_participation']);
+            $prix = isset($_POST['prix']) ? floatval(str_replace(',', '.', $_POST['prix'])) : 0;
+            if ($prix < 0) { $prix = 0; }
             $photo = null;
 
             if (empty($titre)) {
@@ -148,6 +150,7 @@ class ActivityController {
                     'nb_max_participants' => $nb_max,
                     'type' => $type,
                     'conditions_participation' => $conditions,
+                    'prix' => $prix,
                     'photo' => $photo,
                 ]);
 
@@ -199,6 +202,7 @@ class ActivityController {
                 'nb_max_participants' => intval($_POST['nb_max_participants']),
                 'type' => sanitize($_POST['type']),
                 'conditions_participation' => sanitize($_POST['conditions_participation']),
+                'prix' => isset($_POST['prix']) ? max(0, floatval(str_replace(',', '.', $_POST['prix']))) : 0,
             ];
 
             if (!empty($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
@@ -284,6 +288,15 @@ class ActivityController {
         if ($dejaInscrit) {
             $_SESSION['flash'] = ['type' => 'warning', 'message' => 'Vous êtes déjà inscrit à cette activité.'];
             redirect('activite', ['id' => $id]);
+        }
+
+        if (floatval($activite['prix']) > 0) {
+            $cartModel = new Cart();
+            if (!$cartModel->exists($_SESSION['user_id'], $id)) {
+                $cartModel->add($_SESSION['user_id'], $id, 1);
+            }
+            $_SESSION['flash'] = ['type' => 'info', 'message' => 'Activité payante : finalisez votre paiement pour valider l\'inscription.'];
+            redirect('panier');
         }
 
         $nbInscrits = $registrationModel->countByActivity($id);

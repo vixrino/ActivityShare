@@ -88,10 +88,19 @@
                 <div class="form-section">
                     <h2>Participants et conditions</h2>
 
-                    <div class="form-group">
-                        <label for="nb_max_participants">Nombre maximum de participants *</label>
-                        <input type="number" id="nb_max_participants" name="nb_max_participants" class="form-control"
-                               value="<?= $activite['nb_max_participants'] ?>" required min="1">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="nb_max_participants">Nombre maximum de participants *</label>
+                            <input type="number" id="nb_max_participants" name="nb_max_participants" class="form-control"
+                                   value="<?= $activite['nb_max_participants'] ?>" required min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="prix">Prix par participant (€)</label>
+                            <input type="number" id="prix" name="prix" class="form-control"
+                                   value="<?= sanitize(number_format(floatval($activite['prix'] ?? 0), 2, '.', '')) ?>"
+                                   min="0" step="0.01">
+                            <small class="form-help">Laissez à 0 pour une activité gratuite.</small>
+                        </div>
                     </div>
 
                     <div class="form-group">

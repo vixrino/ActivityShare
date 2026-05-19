@@ -100,15 +100,11 @@
                                 }
                                 ?>
                                 <span class="activity-card-places <?= $classePlaces ?>">
-                                    <i class="fas fa-users"></i>
-                                    <?= $activite['nb_inscrits'] ?>/<?= $activite['nb_max_participants'] ?> places
+                                    <i class="fas fa-users" aria-hidden="true"></i>
+                                    <?= $activite['nb_inscrits'] ?>/<?= $activite['nb_max_participants'] ?>
                                 </span>
-                                <span class="activity-card-type <?= $activite['type'] ?>">
-                                    <?php if ($activite['type'] === 'public'): ?>
-                                        Public
-                                    <?php else: ?>
-                                        Privé
-                                    <?php endif; ?>
+                                <span class="activity-card-price <?= floatval($activite['prix']) > 0 ? 'paid' : 'free' ?>">
+                                    <?= formatPrice($activite['prix']) ?>
                                 </span>
                             </div>
                         </div>
