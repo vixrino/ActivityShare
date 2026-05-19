@@ -120,8 +120,8 @@ class Activity {
 
     public function create($data) {
         $sql = "INSERT INTO activite (organisateur_id, titre, description, categorie_id, date_debut, date_fin,
-                                      lieu, adresse, nb_max_participants, type, conditions_participation, photo)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                      lieu, adresse, nb_max_participants, type, conditions_participation, prix, photo)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
@@ -136,6 +136,7 @@ class Activity {
             $data['nb_max_participants'],
             $data['type'],
             $data['conditions_participation'],
+            $data['prix'] ?? 0,
             $data['photo'],
         ]);
 
