@@ -138,6 +138,36 @@ function uploadImage($file, $directory) {
     return null;
 }
 
+function formatPrice($prix) {
+    $prix = floatval($prix);
+    if ($prix <= 0) {
+        return 'Gratuit';
+    }
+    return number_format($prix, 2, ',', ' ') . ' €';
+}
+
+function cartCount() {
+    if (!isLoggedIn()) {
+        return 0;
+    }
+    $cartModel = new Cart();
+    return $cartModel->count($_SESSION['user_id']);
+}
+
+function unreadMessages() {
+    if (!isLoggedIn()) {
+        return 0;
+    }
+    $messageModel = new PrivateMessage();
+    return $messageModel->countUnread($_SESSION['user_id']);
+}
+
+function richSanitize($contenu) {
+    $contenu = trim($contenu);
+    $allowed = '<h1><h2><h3><h4><p><br><strong><em><ul><ol><li><a><blockquote><hr>';
+    return strip_tags($contenu, $allowed);
+}
+
 function getPlacesRestantes($activiteId) {
     $activiteModel = new Activity();
     $activite = $activiteModel->find($activiteId);
