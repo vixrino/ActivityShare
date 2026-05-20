@@ -30,6 +30,7 @@ class MessagingController {
         $messageModel = new PrivateMessage();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['contenu'])) {
+            csrfVerify();
             $contenu = trim($_POST['contenu']);
             if (strlen($contenu) > 0 && strlen($contenu) <= 2000) {
                 $messageModel->send($_SESSION['user_id'], $otherId, $contenu);

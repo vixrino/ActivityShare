@@ -36,6 +36,7 @@
                 <?php endif; ?>
 
                 <form method="POST" action="index.php?page=mot-de-passe-oublie">
+                    <?= csrfField() ?>
                     <div class="form-group">
                         <label for="email"><i class="fas fa-envelope" aria-hidden="true"></i> Adresse e-mail</label>
                         <input type="email" id="email" name="email" class="form-control"

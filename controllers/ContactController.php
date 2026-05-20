@@ -6,6 +6,7 @@ class ContactController {
         $success = false;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $nom = sanitize($_POST['nom']);
             $email = sanitize($_POST['email']);
             $sujet = sanitize($_POST['sujet']);

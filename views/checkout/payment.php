@@ -19,6 +19,7 @@
 
         <div class="checkout-layout">
             <form method="POST" action="index.php?page=paiement" class="checkout-form" autocomplete="on">
+                <?= csrfField() ?>
                 <div class="checkout-stepper" aria-hidden="true">
                     <span class="step done"><span>1</span> Panier</span>
                     <span class="step current"><span>2</span> Paiement</span>

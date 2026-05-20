@@ -20,6 +20,7 @@
             <div class="cart-layout">
                 <div class="cart-items">
                     <form method="POST" action="index.php?page=panier-modifier">
+                        <?= csrfField() ?>
                         <?php foreach ($items as $item):
                             $places = intval($item['nb_max_participants']) - intval($item['nb_inscrits']); ?>
                             <article class="cart-item">

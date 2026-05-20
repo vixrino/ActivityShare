@@ -15,6 +15,7 @@ class CheckoutController {
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $titulaire = sanitize($_POST['titulaire'] ?? '');
             $numeroCarte = preg_replace('/\s+/', '', $_POST['numero_carte'] ?? '');
             $expiration = sanitize($_POST['expiration'] ?? '');

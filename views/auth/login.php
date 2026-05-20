@@ -18,6 +18,7 @@
                 <?php endif; ?>
 
                 <form method="POST" action="index.php?page=connexion">
+                    <?= csrfField() ?>
                     <div class="form-group">
                         <label for="email"><i class="fas fa-envelope"></i> Adresse e-mail</label>
                         <input type="email" id="email" name="email" class="form-control"

@@ -11,6 +11,7 @@
         <div class="form-container mb-2">
             <h2>Ajouter une question</h2>
             <form method="POST" action="index.php?page=admin-faq">
+                <?= csrfField() ?>
                 <input type="hidden" name="faq_action" value="create">
                 <div class="form-group">
                     <label for="question">Question *</label>
@@ -32,6 +33,7 @@
             <?php foreach ($faqs as $f): ?>
                 <div class="faq-admin-item">
                     <form method="POST" action="index.php?page=admin-faq" class="faq-edit-form">
+                        <?= csrfField() ?>
                         <input type="hidden" name="faq_action" value="update">
                         <input type="hidden" name="faq_id" value="<?= $f['id'] ?>">
                         <div class="form-group">
@@ -47,6 +49,7 @@
                         </div>
                     </form>
                     <form method="POST" action="index.php?page=admin-faq" class="inline-form">
+                        <?= csrfField() ?>
                         <input type="hidden" name="faq_action" value="delete">
                         <input type="hidden" name="faq_id" value="<?= $f['id'] ?>">
                         <button type="submit" class="btn btn-sm btn-danger"

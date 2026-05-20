@@ -64,6 +64,7 @@ class CartController {
         requireLogin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $cartModel = new Cart();
             foreach ($_POST['quantites'] ?? [] as $activityId => $quantite) {
                 $cartModel->updateQuantity($_SESSION['user_id'], intval($activityId), intval($quantite));
