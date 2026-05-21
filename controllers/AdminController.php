@@ -56,6 +56,7 @@ class AdminController {
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $action = $_POST['faq_action'];
 
             if ($action === 'create') {
@@ -123,6 +124,7 @@ class AdminController {
         if ($id > 0 && $id != $_SESSION['user_id']) {
             $userModel = new User();
             $userModel->toggleActive($id);
+            logSecurity('admin_toggle_user', 'target_id=' . $id);
             $_SESSION['flash'] = ['type' => 'success', 'message' => 'Statut de l\'utilisateur modifié.'];
         }
 
@@ -140,6 +142,7 @@ class AdminController {
         if ($id > 0 && $id != $_SESSION['user_id']) {
             $userModel = new User();
             $userModel->delete($id);
+            logSecurity('admin_delete_user', 'target_id=' . $id);
             $_SESSION['flash'] = ['type' => 'success', 'message' => 'Utilisateur supprimé définitivement.'];
         } else {
             $_SESSION['flash'] = ['type' => 'danger', 'message' => 'Action impossible.'];
@@ -154,6 +157,7 @@ class AdminController {
         $editorialModel = new EditorialContent();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $cle = sanitize($_POST['cle']);
             $titre = sanitize($_POST['titre']);
             $contenu = richSanitize($_POST['contenu']);
@@ -209,9 +213,35 @@ class AdminController {
         if ($id > 0) {
             $activityModel = new Activity();
             $activityModel->delete($id);
+            logSecurity('admin_delete_activity', 'activite_id=' . $id);
             $_SESSION['flash'] = ['type' => 'success', 'message' => 'Activité supprimée.'];
         }
 
         redirect('admin-activites');
+    }
+
+    // ============================================
+    // Journal de sécurité : tentatives de login, actions admin, CSRF...
+    // ============================================
+    public function security() {
+        requireAdmin();
+
+        $logModel = new SecurityLog();
+        $action = isset($_GET['action_filter']) ? trim($_GET['action_filter']) : '';
+        $logs = $logModel->recent(150, $action ?: null);
+
+        $resume = [
+            'login_failed_24h' => $logModel->countByAction('login_failed', 24),
+            'login_blocked_24h' => $logModel->countByAction('login_blocked', 24),
+            'csrf_failed_24h' => $logModel->countByAction('csrf_failed', 24),
+            'admin_actions_24h' => $logModel->countByAction('admin_delete_user', 24)
+                + $logModel->countByAction('admin_delete_activity', 24)
+                + $logModel->countByAction('admin_toggle_user', 24),
+        ];
+
+        $pageTitle = 'Journal de sécurité';
+        include __DIR__ . '/../views/layout/header.php';
+        include __DIR__ . '/../views/admin/security.php';
+        include __DIR__ . '/../views/layout/footer.php';
     }
 }
