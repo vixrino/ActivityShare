@@ -26,4 +26,7 @@ $adminPage = $page ?? '';
     <a href="index.php?page=admin-mailbox" class="admin-nav-link <?= $adminPage === 'admin-mailbox' ? 'active' : '' ?>">
         <i class="fas fa-inbox" aria-hidden="true"></i> Boîte mail
     </a>
+    <a href="index.php?page=admin-securite" class="admin-nav-link <?= $adminPage === 'admin-securite' ? 'active' : '' ?>">
+        <i class="fas fa-shield-alt" aria-hidden="true"></i> Sécurité
+    </a>
 </div>
