@@ -110,6 +110,28 @@ class User {
         return $stmt->fetchAll();
     }
 
+    public function listPublic($search = '', $role = '', $limit = 60) {
+        $sql = "SELECT id, nom, prenom, ville, role, photo_profil, bio, date_inscription
+                FROM utilisateur
+                WHERE actif = 1";
+        $params = [];
+        if ($search !== '') {
+            $sql .= " AND (nom LIKE ? OR prenom LIKE ? OR ville LIKE ?)";
+            $like = '%' . $search . '%';
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+        }
+        if (in_array($role, ['participant', 'organisateur', 'administrateur'], true)) {
+            $sql .= " AND role = ?";
+            $params[] = $role;
+        }
+        $sql .= " ORDER BY prenom ASC, nom ASC LIMIT " . intval($limit);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     public function verify($email, $motDePasse) {
         $user = $this->findByEmail($email);
 
