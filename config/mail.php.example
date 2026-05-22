@@ -1,0 +1,22 @@
+<?php
+// Copier ce fichier en config/mail.php et remplir les valeurs.
+//
+// Pour Gmail :
+//   1. Activer la validation en 2 étapes sur le compte Google.
+//   2. Créer un "Mot de passe d'application" sur https://myaccount.google.com/apppasswords
+//   3. Coller ce mot de passe (16 caractères) dans MAIL_PASSWORD.
+//   4. Mettre MAIL_ENABLED à true.
+//
+// Si MAIL_ENABLED est à false, aucun e-mail n'est envoyé : le site affiche
+// directement le lien de réinitialisation à l'écran (mode démo).
+
+return [
+    'MAIL_ENABLED'   => false,
+    'MAIL_HOST'      => 'smtp.gmail.com',
+    'MAIL_PORT'      => 587,
+    'MAIL_USERNAME'  => 'votre.adresse@gmail.com',
+    'MAIL_PASSWORD'  => 'xxxx xxxx xxxx xxxx',
+    'MAIL_ENCRYPTION'=> 'tls',
+    'MAIL_FROM'      => 'votre.adresse@gmail.com',
+    'MAIL_FROM_NAME' => 'ActivityShare',
+];

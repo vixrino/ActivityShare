@@ -168,6 +168,56 @@ function richSanitize($contenu) {
     return strip_tags($contenu, $allowed);
 }
 
+function mailConfig() {
+    static $config = null;
+    if ($config === null) {
+        $path = __DIR__ . '/../config/mail.php';
+        if (file_exists($path)) {
+            $config = require $path;
+        } else {
+            $config = ['MAIL_ENABLED' => false];
+        }
+    }
+    return $config;
+}
+
+function sendMail($to, $subject, $body, $altBody = '') {
+    $config = mailConfig();
+    if (empty($config['MAIL_ENABLED'])) {
+        return false;
+    }
+
+    require_once __DIR__ . '/../vendor/PHPMailer/PHPMailer.php';
+    require_once __DIR__ . '/../vendor/PHPMailer/SMTP.php';
+    require_once __DIR__ . '/../vendor/PHPMailer/Exception.php';
+
+    $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host       = $config['MAIL_HOST'];
+        $mail->Port       = (int)$config['MAIL_PORT'];
+        $mail->SMTPAuth   = true;
+        $mail->Username   = $config['MAIL_USERNAME'];
+        $mail->Password   = $config['MAIL_PASSWORD'];
+        if (!empty($config['MAIL_ENCRYPTION'])) {
+            $mail->SMTPSecure = $config['MAIL_ENCRYPTION'];
+        }
+        $mail->CharSet    = 'UTF-8';
+
+        $mail->setFrom($config['MAIL_FROM'], $config['MAIL_FROM_NAME'] ?? '');
+        $mail->addAddress($to);
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body    = $body;
+        $mail->AltBody = $altBody !== '' ? $altBody : strip_tags($body);
+
+        return $mail->send();
+    } catch (\Exception $e) {
+        error_log('[ActivityShare] Echec envoi mail : ' . $mail->ErrorInfo);
+        return false;
+    }
+}
+
 function getPlacesRestantes($activiteId) {
     $activiteModel = new Activity();
     $activite = $activiteModel->find($activiteId);

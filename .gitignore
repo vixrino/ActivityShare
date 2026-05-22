@@ -3,6 +3,7 @@ controllers/Documents/
 
 # Fichiers de configuration sensibles
 config/database.php
+config/mail.php
 
 # Fichiers uploadés par les utilisateurs
 uploads/
