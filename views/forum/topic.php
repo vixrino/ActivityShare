@@ -16,15 +16,17 @@
     <div class="container">
         <article class="forum-post forum-post-first">
             <header class="forum-post-head">
-                <div class="topic-avatar">
+                <a href="index.php?page=utilisateur&id=<?= intval($topic['utilisateur_id']) ?>" class="topic-avatar user-link">
                     <?php if ($topic['photo_profil']): ?>
                         <img src="<?= sanitize($topic['photo_profil']) ?>" alt="">
                     <?php else: ?>
                         <span class="avatar-placeholder"><?= strtoupper(substr($topic['prenom'], 0, 1) . substr($topic['nom'], 0, 1)) ?></span>
                     <?php endif; ?>
-                </div>
+                </a>
                 <div>
-                    <strong><?= sanitize($topic['prenom'] . ' ' . $topic['nom']) ?></strong>
+                    <a href="index.php?page=utilisateur&id=<?= intval($topic['utilisateur_id']) ?>" class="user-link">
+                        <strong><?= sanitize($topic['prenom'] . ' ' . $topic['nom']) ?></strong>
+                    </a>
                     <span class="role-badge role-<?= sanitize($topic['role']) ?>" style="margin-left:8px;"><?= sanitize(ucfirst($topic['role'])) ?></span>
                     <small class="text-muted"> · <?= timeAgo($topic['date_creation']) ?></small>
                 </div>
@@ -48,15 +50,17 @@
         <?php foreach ($messages as $m): ?>
             <article class="forum-post">
                 <header class="forum-post-head">
-                    <div class="topic-avatar">
+                    <a href="index.php?page=utilisateur&id=<?= intval($m['utilisateur_id']) ?>" class="topic-avatar user-link">
                         <?php if ($m['photo_profil']): ?>
                             <img src="<?= sanitize($m['photo_profil']) ?>" alt="">
                         <?php else: ?>
                             <span class="avatar-placeholder"><?= strtoupper(substr($m['prenom'], 0, 1) . substr($m['nom'], 0, 1)) ?></span>
                         <?php endif; ?>
-                    </div>
+                    </a>
                     <div>
-                        <strong><?= sanitize($m['prenom'] . ' ' . $m['nom']) ?></strong>
+                        <a href="index.php?page=utilisateur&id=<?= intval($m['utilisateur_id']) ?>" class="user-link">
+                            <strong><?= sanitize($m['prenom'] . ' ' . $m['nom']) ?></strong>
+                        </a>
                         <small class="text-muted"> · <?= timeAgo($m['date_envoi']) ?></small>
                     </div>
                 </header>
@@ -68,6 +72,7 @@
 
         <?php if (isLoggedIn() && !$topic['ferme']): ?>
             <form method="POST" action="index.php?page=forum-topic&id=<?= intval($topic['id']) ?>" class="forum-reply-form">
+                <?= csrfField() ?>
                 <h2><i class="fas fa-reply" aria-hidden="true"></i> Répondre</h2>
                 <div class="form-group">
                     <label for="reply" class="sr-only">Votre réponse</label>
