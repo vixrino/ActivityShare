@@ -4,9 +4,6 @@
     <div class="container">
         <div class="footer-grid">
             <div class="footer-col">
-                <div class="footer-logo-wrapper">
-                    <img src="assets/img/logo.png" alt="ActivityShare" class="footer-logo">
-                </div>
                 <p class="footer-brand-name">ActivityShare</p>
                 <p class="footer-desc">La plateforme qui connecte les passionnés d'activités locales. Proposez, découvrez et partagez des expériences uniques près de chez vous.</p>
                 <p class="footer-team">Équipe <strong>Webkit</strong> — Groupe G8A</p>

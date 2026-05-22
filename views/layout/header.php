@@ -18,7 +18,6 @@
     <div class="container navbar-content">
         <a href="index.php?page=home" class="navbar-brand" aria-label="ActivityShare - retour à l'accueil">
             <img src="assets/img/logo.png" alt="ActivityShare" class="navbar-logo">
-            <span class="navbar-brand-text">ActivityShare</span>
         </a>
 
         <button class="navbar-toggle" id="navbarToggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="navbarMenu">
