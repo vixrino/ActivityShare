@@ -19,6 +19,7 @@
             <?php endif; ?>
 
             <form method="POST" action="index.php?page=creer-activite" enctype="multipart/form-data">
+                <?= csrfField() ?>
                 <div class="form-section">
                     <h2>Informations générales</h2>
 
@@ -71,6 +72,15 @@
                         ?>
                         <textarea id="description" name="description" class="form-control" rows="5"
                                   required placeholder="Décrivez votre activité en détail..."><?= $descriptionValeur ?></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tags">Tags <span class="muted">(séparés par des virgules)</span></label>
+                        <input type="text" id="tags" name="tags" class="form-control"
+                               value="<?= isset($_POST['tags']) ? sanitize($_POST['tags']) : '' ?>"
+                               placeholder="ex : sport, plein air, débutant"
+                               maxlength="200">
+                        <small class="muted">Aidez les participants à trouver votre activité.</small>
                     </div>
                 </div>
 
