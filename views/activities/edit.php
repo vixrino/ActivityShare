@@ -19,6 +19,7 @@
             <?php endif; ?>
 
             <form method="POST" action="index.php?page=modifier-activite&id=<?= $activite['id'] ?>" enctype="multipart/form-data">
+                <?= csrfField() ?>
                 <div class="form-section">
                     <h2>Informations générales</h2>
 
@@ -52,6 +53,14 @@
                         <label for="description">Description *</label>
                         <textarea id="description" name="description" class="form-control" rows="5"
                                   required><?= sanitize($activite['description']) ?></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tags">Tags <span class="muted">(séparés par des virgules)</span></label>
+                        <input type="text" id="tags" name="tags" class="form-control"
+                               value="<?= sanitize($tagsCSV ?? '') ?>"
+                               placeholder="ex : sport, plein air, débutant"
+                               maxlength="200">
                     </div>
                 </div>
 

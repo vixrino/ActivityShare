@@ -79,9 +79,69 @@ class ActivityController {
             }
         }
 
+        // Tags
+        $tagModel = new Tag();
+        $tags = $tagModel->getForActivity($id);
+
+        // Statistiques de vues : on enregistre la vue actuelle puis on lit le total
+        $viewModel = new ActivityView();
+        $userIdForView = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
+        $viewModel->record($id, $userIdForView, clientIp());
+        $nbVues = $viewModel->countForActivity($id);
+
+        // Notation : note moyenne, avis, éligibilité de l'utilisateur courant
+        $ratingModel = new Rating();
+        $activityRating = $ratingModel->getActivityRating($id);
+        $activityReviews = $ratingModel->getActivityReviews($id, 10);
+        $organizerRating = $ratingModel->getOrganizerRating($activite['organisateur_id']);
+
+        $canRateActivity = false;
+        $userActivityRating = null;
+        $canRateOrganizer = false;
+        $userOrganizerRating = null;
+
+        if (isLoggedIn()) {
+            $canRateActivity = $ratingModel->canRate($_SESSION['user_id'], $id);
+            $userActivityRating = $ratingModel->findActivityRating($_SESSION['user_id'], $id);
+            $canRateOrganizer = $canRateActivity && intval($activite['organisateur_id']) !== intval($_SESSION['user_id']);
+            $userOrganizerRating = $ratingModel->findOrganizerRating($_SESSION['user_id'], $activite['organisateur_id'], $id);
+        }
+
+        // URL absolue de partage (utilisée pour QR code et copier-coller)
+        $shareUrl = $this->absoluteUrl('index.php?page=activite&id=' . $id);
+
         $pageTitle = $activite['titre'];
         include __DIR__ . '/../views/layout/header.php';
         include __DIR__ . '/../views/activities/show.php';
+        include __DIR__ . '/../views/layout/footer.php';
+    }
+
+    private function absoluteUrl($path) {
+        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+        $scheme = $https ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $dir = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\');
+        return $scheme . '://' . $host . $dir . '/' . ltrim($path, '/');
+    }
+
+    public function byTag() {
+        $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
+        $tagModel = new Tag();
+        $tag = $tagModel->findBySlug($slug);
+
+        if (!$tag) {
+            $_SESSION['flash'] = ['type' => 'warning', 'message' => 'Tag introuvable.'];
+            redirect('activites');
+        }
+
+        $activityModel = new Activity();
+        $activites = $activityModel->getByTag($tag['id']);
+        $categories = (new Category())->getAll();
+
+        $pageTitle = 'Tag : ' . $tag['nom'];
+        include __DIR__ . '/../views/layout/header.php';
+        include __DIR__ . '/../views/activities/by-tag.php';
         include __DIR__ . '/../views/layout/footer.php';
     }
 
@@ -93,6 +153,7 @@ class ActivityController {
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $titre = sanitize($_POST['titre']);
             $description = sanitize($_POST['description']);
             $categorie_id = intval($_POST['categorie_id']);
@@ -105,6 +166,7 @@ class ActivityController {
             $conditions = sanitize($_POST['conditions_participation']);
             $prix = isset($_POST['prix']) ? floatval(str_replace(',', '.', $_POST['prix'])) : 0;
             if ($prix < 0) { $prix = 0; }
+            $tagsInput = inputString($_POST, 'tags', 200);
             $photo = null;
 
             if (empty($titre)) {
@@ -138,7 +200,7 @@ class ActivityController {
 
             if (empty($errors)) {
                 $activityModel = new Activity();
-                $activityModel->create([
+                $newId = $activityModel->create([
                     'organisateur_id' => $_SESSION['user_id'],
                     'titre' => $titre,
                     'description' => $description,
@@ -153,6 +215,10 @@ class ActivityController {
                     'prix' => $prix,
                     'photo' => $photo,
                 ]);
+
+                if ($newId && $tagsInput !== '') {
+                    (new Tag())->syncForActivity($newId, $tagsInput);
+                }
 
                 $_SESSION['flash'] = ['type' => 'success', 'message' => 'Activité créée avec succès !'];
                 redirect('mes-activites');
@@ -191,6 +257,7 @@ class ActivityController {
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrfVerify();
             $data = [
                 'titre' => sanitize($_POST['titre']),
                 'description' => sanitize($_POST['description']),
@@ -214,10 +281,16 @@ class ActivityController {
 
             if (empty($errors)) {
                 $activityModel->update($id, $data);
+                $tagsInput = inputString($_POST, 'tags', 200);
+                (new Tag())->syncForActivity($id, $tagsInput);
                 $_SESSION['flash'] = ['type' => 'success', 'message' => 'Activité modifiée avec succès !'];
                 redirect('activite', ['id' => $id]);
             }
         }
+
+        $tagModel = new Tag();
+        $tagsExistants = $tagModel->getForActivity($id);
+        $tagsCSV = implode(', ', array_map(function ($t) { return $t['nom']; }, $tagsExistants));
 
         $pageTitle = 'Modifier l\'activité';
         include __DIR__ . '/../views/layout/header.php';

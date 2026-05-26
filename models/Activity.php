@@ -209,4 +209,20 @@ class Activity {
         $resultat = $stmt->fetch();
         return $resultat['total'];
     }
+
+    public function getByTag($tagId, $limit = 30) {
+        $sql = "SELECT a.*, c.nom as categorie_nom, c.icone as categorie_icone,
+                       u.nom as organisateur_nom, u.prenom as organisateur_prenom,
+                       (SELECT COUNT(*) FROM inscription i WHERE i.activite_id = a.id AND i.statut = 'inscrit') as nb_inscrits
+                FROM activite a
+                JOIN activite_tag at ON at.activite_id = a.id
+                JOIN categorie c ON a.categorie_id = c.id
+                JOIN utilisateur u ON a.organisateur_id = u.id
+                WHERE at.tag_id = ? AND a.statut = 'active'
+                ORDER BY a.date_debut ASC
+                LIMIT " . intval($limit);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$tagId]);
+        return $stmt->fetchAll();
+    }
 }
