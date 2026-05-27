@@ -207,6 +207,45 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
   });
+
+  // ===== Partage : bouton "Copier le lien" =====
+  const copyBtn = document.getElementById("copyShareBtn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", function () {
+      const targetId = this.dataset.target;
+      const input = document.getElementById(targetId);
+      if (!input) return;
+      const value = input.value;
+      const finish = () => {
+        const original = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copié !';
+        setTimeout(function () { copyBtn.innerHTML = original; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(value).then(finish, function () {
+          input.select(); document.execCommand("copy"); finish();
+        });
+      } else {
+        input.select(); document.execCommand("copy"); finish();
+      }
+    });
+  }
+
+  // ===== Partage : afficher/masquer le QR code =====
+  const qrBtn = document.getElementById("toggleQrBtn");
+  const qrPanel = document.getElementById("qrPanel");
+  if (qrBtn && qrPanel) {
+    qrBtn.addEventListener("click", function () {
+      const isHidden = qrPanel.hasAttribute("hidden");
+      if (isHidden) {
+        qrPanel.removeAttribute("hidden");
+        qrBtn.setAttribute("aria-expanded", "true");
+      } else {
+        qrPanel.setAttribute("hidden", "");
+        qrBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
 });
 
 function togglePassword(inputId) {
